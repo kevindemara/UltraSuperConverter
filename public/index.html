@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UltraSuperConvertor // Quantum Media Compression &amp; Transcoding Studio</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png?v=6" />
+  <link rel="stylesheet" href="/styles.css?v=6" />
+</head>
+<body>
+  <!-- Semi-Dark Ambient Backdrop with Subtle Moving Waves -->
+  <div class="ambient-waves" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <!-- Wave Layer 1: Deep Electric Cobalt Slow Swell (Period = 1440) -->
+    <svg class="wave-svg wave-layer-1" viewBox="0 0 2880 320" preserveAspectRatio="none">
+      <path d="M0,160 C480,270 960,50 1440,160 C1920,270 2400,50 2880,160 L2880,320 L0,320 Z" />
+    </svg>
+
+    <!-- Wave Layer 2: Cyan Photonic Mid-Drift (Period = 1440) -->
+    <svg class="wave-svg wave-layer-2" viewBox="0 0 2880 320" preserveAspectRatio="none">
+      <path d="M0,190 C480,80 960,300 1440,190 C1920,80 2400,300 2880,190 L2880,320 L0,320 Z" />
+    </svg>
+
+    <!-- Wave Layer 3: Subtle Harmonic Crest & Line (Period = 1440) -->
+    <svg class="wave-svg wave-layer-3" viewBox="0 0 2880 320" preserveAspectRatio="none">
+      <path class="wave-fill" d="M0,215 C360,135 1080,295 1440,215 C1800,135 2520,295 2880,215 L2880,320 L0,320 Z" />
+      <path class="wave-crest" d="M0,160 C480,270 960,50 1440,160 C1920,270 2400,50 2880,160" />
+      <path class="wave-crest-alt" d="M0,190 C480,80 960,300 1440,190 C1920,80 2400,300 2880,190" />
+    </svg>
+  </div>
+
+  <!-- Top High-Tech Command Bar (Dark Obsidian & Crisp Alabaster Contrast) -->
+  <header class="topbar">
+    <div class="brand-lockup">
+      <div class="brand-logo-wrap">
+        <img src="/assets/logo-opt.png?v=2" alt="UltraSuperConvertor Aperture Emblem" class="brand-logo" width="48" height="48" />
+        <span class="logo-pulse-ring" aria-hidden="true"></span>
+      </div>
+      <div class="brand-titles">
+        <div class="brand-name-row">
+          <h1 class="brand-title">
+            <img src="/assets/wordmark.webp?v=2" alt="ULTRA SUPER CONVERTOR" class="brand-wordmark" height="28" />
+          </h1>
+          <span class="tech-tag">QUANTUM CORE v2.4</span>
+        </div>
+        <p class="brand-subtitle">MULTI-FORMAT IMAGE, VIDEO &amp; AUDIO COMPRESSOR // CONVERTER // RESIZER</p>
+      </div>
+    </div>
+
+    <!-- Live Telemetry HUD Strip -->
+    <div class="telemetry-strip" role="status" aria-live="polite">
+      <div class="telemetry-pill">
+        <span class="status-dot online" id="engineStatusDot"></span>
+        <span class="telemetry-label">ENGINE</span>
+        <strong class="telemetry-val" id="engineStatusText">ONLINE</strong>
+      </div>
+      <div class="telemetry-pill">
+        <span class="telemetry-label">QUEUE</span>
+        <strong class="telemetry-val" id="statQueueCount">0 FILES</strong>
+      </div>
+      <div class="telemetry-pill">
+        <span class="telemetry-label">SAVED</span>
+        <strong class="telemetry-val highlight-emerald" id="statBytesSaved">0.0 KB (0%)</strong>
+      </div>
+      <div class="telemetry-pill hide-mobile">
+        <span class="telemetry-label">CORES</span>
+        <strong class="telemetry-val" id="statEngines">SHARP + FFMPEG 6.1</strong>
+      </div>
+    </div>
+
+    <!-- Header Action Controls including Check Updates, Setup Wizard & Stop Instance Button -->
+    <div class="topbar-actions">
+      <button type="button" class="btn-tech btn-outline" id="btnCheckUpdates" title="Check GitHub repository for updates">
+        <span>↻ CHECK UPDATES</span>
+      </button>
+
+      <a href="/setup" class="btn-tech btn-outline" id="btnSetupWizard" title="Open HTML Setup &amp; Desktop Shortcut Wizard" style="text-decoration:none;">
+        <span>⚙ SETUP WIZARD</span>
+      </a>
+
+      <button type="button" class="btn-tech btn-outline" id="btnOpenFolder" title="Open Output Folder in Windows Explorer">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>OUTPUT FOLDER</span>
+      </button>
+
+      <button type="button" class="btn-tech btn-danger-power" id="btnStopInstance" title="Stop UltraSuperConvertor Server Instance">
+        <span class="power-led" aria-hidden="true"></span>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10m6.36-5.36a9 9 0 11-12.73 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span>STOP INSTANCE</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main 3-Column Above-the-Fold Studio Workspace Container -->
+  <main class="workspace">
+    <!-- Column 1: Step 01 Smart Preset Matrix -->
+    <section class="panel-card studio-col col-presets" aria-label="Step 01 Smart Preset Matrix">
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <span class="step-index">01</span>
+          <h2>SMART PRESET MATRIX</h2>
+        </div>
+        <span class="panel-badge" id="activePresetBadge">WEB ULTRA</span>
+      </div>
+
+      <div class="col-scroll-body scroller">
+        <div class="preset-grid" role="radiogroup" aria-label="Optimization Presets">
+          <button type="button" class="preset-card active" data-preset="web-ultra" role="radio" aria-checked="true">
+            <div class="preset-card-top">
+              <span class="preset-icon">⚡</span>
+              <span class="preset-tag">RECOMMENDED</span>
+            </div>
+            <div class="preset-name">Optimize for Web</div>
+            <div class="preset-desc">Next-gen WebP / MP4 FastStart, max 1920px, 80% quality, strips EXIF</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="social-hd" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">📱</span>
+              <span class="preset-tag">1080P HD</span>
+            </div>
+            <div class="preset-name">Social &amp; Creators</div>
+            <div class="preset-desc">Crisp 1080p limit, 88% visual fidelity, H.264 + AAC 192k</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="discord-chat" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">💬</span>
+              <span class="preset-tag">&lt; 8MB TARGET</span>
+            </div>
+            <div class="preset-name">Discord / Chat Fit</div>
+            <div class="preset-desc">Auto-tunes bitrate &amp; quality to stay under strict chat size limits</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="email-light" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">✉️</span>
+              <span class="preset-tag">ULTRA COMPACT</span>
+            </div>
+            <div class="preset-name">Email &amp; Fast Share</div>
+            <div class="preset-desc">Max 1280px / 720p, high compression ratio for instant attachments</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="ecommerce" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">🛍️</span>
+              <span class="preset-tag">1:1 STUDIO</span>
+            </div>
+            <div class="preset-name">E-Commerce Square</div>
+            <div class="preset-desc">1600×1600 padded studio frame, optical sharpen boost, crisp WebP</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="nextgen-avif" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">🧬</span>
+              <span class="preset-tag">AVIF / WEBM</span>
+            </div>
+            <div class="preset-name">Next-Gen Codec Lab</div>
+            <div class="preset-desc">AVIF images &amp; VP9 WebM video for maximum compression efficiency</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="archival-master" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">💎</span>
+              <span class="preset-tag">LOSSLESS / PRO</span>
+            </div>
+            <div class="preset-name">Archival Master</div>
+            <div class="preset-desc">Original dimensions, lossless/CRF 16, retains all EXIF &amp; color metadata</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="video-gif" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">🎞️</span>
+              <span class="preset-tag">LOOPING GIF</span>
+            </div>
+            <div class="preset-name">Video → Animated GIF</div>
+            <div class="preset-desc">Converts video clips into Bayer-dithered palette-optimized looping GIFs</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="audio-extract" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">🎧</span>
+              <span class="preset-tag">AUDIO ONLY</span>
+            </div>
+            <div class="preset-name">Audio Track Extractor</div>
+            <div class="preset-desc">Extracts &amp; normalizes audio stream from video/audio to MP3/WAV/FLAC</div>
+          </button>
+
+          <button type="button" class="preset-card" data-preset="thumbnail-micro" role="radio" aria-checked="false">
+            <div class="preset-card-top">
+              <span class="preset-icon">🔍</span>
+              <span class="preset-tag">480PX MICRO</span>
+            </div>
+            <div class="preset-name">Thumbnail &amp; Preview</div>
+            <div class="preset-desc">Rapid 480px preview thumbnails &amp; tiny featherweight assets</div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 2: Step 02 Core Format, Compression & Resize Controls (Side-by-Side Above the Fold) -->
+    <section class="panel-card studio-col col-engine" aria-label="Step 02 Format and Compression Engine">
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <span class="step-index">02</span>
+          <h2>FORMAT &amp; COMPRESSION ENGINE</h2>
+        </div>
+        <button type="button" class="btn-mini-reset" id="btnResetSettings">RESET</button>
+      </div>
+
+      <div class="col-scroll-body scroller">
+        <form id="settingsForm" class="settings-form" onsubmit="return false;">
+          <!-- Output Format Selectors -->
+          <div class="control-row two-col">
+            <div class="field-group">
+              <label for="imageFormat">IMAGE TARGET FORMAT</label>
+              <select id="imageFormat" class="tech-select">
+                <option value="auto">Auto (Smart Preset)</option>
+                <option value="webp" selected>WebP (Modern Web)</option>
+                <option value="avif">AVIF (Ultra Next-Gen)</option>
+                <option value="jpg">JPG / MozJPEG</option>
+                <option value="png">PNG (Lossless / Alpha)</option>
+                <option value="gif">GIF</option>
+                <option value="tiff">TIFF (LZW Studio)</option>
+                <option value="ico">ICO (Windows Icon 256px)</option>
+                <option value="bmp">BMP (Uncompressed Bitmap)</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label for="videoFormat">VIDEO / AUDIO FORMAT</label>
+              <select id="videoFormat" class="tech-select">
+                <option value="auto">Auto (Smart Preset)</option>
+                <option value="mp4" selected>MP4 (H.264 Universal)</option>
+                <option value="webm">WebM (VP9 Web Video)</option>
+                <option value="mov">MOV (QuickTime Pro)</option>
+                <option value="mkv">MKV (Matroska)</option>
+                <option value="avi">AVI</option>
+                <option value="gif">Animated GIF Loop</option>
+                <option value="webp">Animated WebP Loop</option>
+                <option value="mp3">MP3 (Extract Audio)</option>
+                <option value="wav">WAV (Lossless PCM Audio)</option>
+                <option value="flac">FLAC (Studio Lossless)</option>
+                <option value="aac">AAC / M4A Audio</option>
+                <option value="ogg">OGG Vorbis Audio</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Image Quality Slider -->
+          <div class="field-group slider-box">
+            <div class="slider-header">
+              <label for="qualitySlider">IMAGE PERCEPTUAL QUALITY</label>
+              <output for="qualitySlider" id="qualityValue" class="mono-badge">80%</output>
+            </div>
+            <input type="range" id="qualitySlider" min="5" max="100" value="80" class="tech-range" />
+            <div class="slider-scale">
+              <span>MAX COMPRESSION (5%)</span>
+              <span>BALANCED (80%)</span>
+              <span>LOSSLESS (100%)</span>
+            </div>
+          </div>
+
+          <!-- Video CRF Slider -->
+          <div class="field-group slider-box">
+            <div class="slider-header">
+              <label for="crfSlider">VIDEO CRF COMPRESSION FACTOR</label>
+              <output for="crfSlider" id="crfValue" class="mono-badge">CRF 26 (Web Optimal)</output>
+            </div>
+            <input type="range" id="crfSlider" min="14" max="38" value="26" class="tech-range" />
+            <div class="slider-scale">
+              <span>STUDIO MASTER (14)</span>
+              <span>WEB STREAM (26)</span>
+              <span>TINY FILE (38)</span>
+            </div>
+          </div>
+
+          <!-- Resizing Architecture -->
+          <div class="field-group">
+            <label for="resizeMode">GEOMETRIC RESIZER MODE</label>
+            <select id="resizeMode" class="tech-select">
+              <option value="maxDimension" selected>Cap Max Dimension (No Upscale)</option>
+              <option value="none">Keep Original Dimensions (1:1)</option>
+              <option value="dimensions">Exact Width × Height Box</option>
+              <option value="scale">Scale by Percentage (%)</option>
+            </select>
+          </div>
+
+          <!-- Dynamic Resize Sub-controls -->
+          <div id="resizeMaxDimBox" class="control-row two-col">
+            <div class="field-group">
+              <label for="maxDimension">IMAGE MAX EDGE (PX)</label>
+              <input type="number" id="maxDimension" value="1920" min="16" max="16384" class="tech-input" />
+            </div>
+            <div class="field-group">
+              <label for="videoResolution">VIDEO MAX RESOLUTION</label>
+              <select id="videoResolution" class="tech-select">
+                <option value="original">Original Resolution</option>
+                <option value="2160">4K UHD (2160p)</option>
+                <option value="1440">2K QHD (1440p)</option>
+                <option value="1080" selected>Full HD (1080p)</option>
+                <option value="720">HD Ready (720p)</option>
+                <option value="480">SD Compact (480p)</option>
+                <option value="360">Mobile Micro (360p)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="resizeExactBox" class="control-row three-col" hidden>
+            <div class="field-group">
+              <label for="inputWidth">WIDTH (PX)</label>
+              <input type="number" id="inputWidth" placeholder="Auto" min="1" max="16384" class="tech-input" />
+            </div>
+            <div class="field-group">
+              <label for="inputHeight">HEIGHT (PX)</label>
+              <input type="number" id="inputHeight" placeholder="Auto" min="1" max="16384" class="tech-input" />
+            </div>
+            <div class="field-group">
+              <label for="fitMode">FIT STRATEGY</label>
+              <select id="fitMode" class="tech-select">
+                <option value="inside">Inside (Fit)</option>
+                <option value="cover">Cover (Crop)</option>
+                <option value="contain">Contain (Pad)</option>
+                <option value="fill">Fill (Stretch)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="resizeScaleBox" class="field-group slider-box" hidden>
+            <div class="slider-header">
+              <label for="scaleSlider">DIMENSION SCALE PERCENTAGE</label>
+              <output for="scaleSlider" id="scaleValue" class="mono-badge">50%</output>
+            </div>
+            <input type="range" id="scaleSlider" min="10" max="200" step="5" value="50" class="tech-range" />
+          </div>
+
+          <!-- Quick Checkboxes -->
+          <div class="checkbox-matrix">
+            <label class="check-item" for="chkStripMeta">
+              <input type="checkbox" id="chkStripMeta" class="visually-hidden" checked />
+              <span>Strip EXIF / GPS Metadata</span>
+            </label>
+            <label class="check-item" for="chkProgressive">
+              <input type="checkbox" id="chkProgressive" class="visually-hidden" checked />
+              <span>Progressive / Web FastStart</span>
+            </label>
+            <label class="check-item" for="chkLossless">
+              <input type="checkbox" id="chkLossless" class="visually-hidden" />
+              <span>Force Lossless Encoding</span>
+            </label>
+            <label class="check-item" for="chkSharpen">
+              <input type="checkbox" id="chkSharpen" class="visually-hidden" />
+              <span>Optical Edge Sharpening</span>
+            </label>
+          </div>
+
+          <!-- Collapsible Advanced Pro Telemetry & Filters Drawer (Animated to Intrinsic Size) -->
+          <div class="accordion-block">
+            <button type="button" class="accordion-trigger" id="btnToggleAdvanced" aria-expanded="false" aria-controls="advancedDrawer">
+              <span>ADVANCED OPTICS, AUDIO &amp; TARGET BUDGET</span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </button>
+
+            <div id="advancedDrawer" class="expandable-container">
+              <div class="advanced-inner">
+                <!-- Target File Size Auto-Budgeting -->
+                <div class="control-row two-col">
+                  <div class="field-group">
+                    <label for="targetSizeKB">IMAGE MAX SIZE (KB)</label>
+                    <input type="number" id="targetSizeKB" placeholder="Optional (e.g. 250)" min="5" class="tech-input" />
+                  </div>
+                  <div class="field-group">
+                    <label for="targetSizeMB">VIDEO MAX SIZE (MB)</label>
+                    <input type="number" id="targetSizeMB" placeholder="Optional (e.g. 8)" min="0.5" step="0.5" class="tech-input" />
+                  </div>
+                </div>
+
+                <!-- Image Orientation & Color Modulation -->
+                <div class="control-row three-col">
+                  <div class="field-group">
+                    <label for="rotateSelect">ROTATE</label>
+                    <select id="rotateSelect" class="tech-select">
+                      <option value="0">0° Normal</option>
+                      <option value="90">90° CW</option>
+                      <option value="180">180° Invert</option>
+                      <option value="270">270° CCW</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label for="brightnessInput">BRIGHTNESS</label>
+                    <input type="number" id="brightnessInput" value="1.0" min="0.3" max="2.0" step="0.1" class="tech-input" />
+                  </div>
+                  <div class="field-group">
+                    <label for="saturationInput">SATURATION</label>
+                    <input type="number" id="saturationInput" value="1.0" min="0.0" max="2.5" step="0.1" class="tech-input" />
+                  </div>
+                </div>
+
+                <div class="checkbox-matrix">
+                  <label class="check-item" for="chkFlipH">
+                    <input type="checkbox" id="chkFlipH" class="visually-hidden" />
+                    <span>Flip Horizontal</span>
+                  </label>
+                  <label class="check-item" for="chkFlipV">
+                    <input type="checkbox" id="chkFlipV" class="visually-hidden" />
+                    <span>Flip Vertical</span>
+                  </label>
+                  <label class="check-item" for="chkGrayscale">
+                    <input type="checkbox" id="chkGrayscale" class="visually-hidden" />
+                    <span>Monochrome / B&amp;W</span>
+                  </label>
+                  <label class="check-item" for="chkNormalizeAudio">
+                    <input type="checkbox" id="chkNormalizeAudio" class="visually-hidden" />
+                    <span>Loudnorm Audio</span>
+                  </label>
+                </div>
+
+                <!-- Video FPS, Speed, Audio Mode, Trim -->
+                <div class="control-row three-col">
+                  <div class="field-group">
+                    <label for="fpsSelect">VIDEO FPS</label>
+                    <select id="fpsSelect" class="tech-select">
+                      <option value="original">Original FPS</option>
+                      <option value="60">60 FPS</option>
+                      <option value="30">30 FPS</option>
+                      <option value="24">24 FPS Cinema</option>
+                      <option value="15">15 FPS GIF/Web</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label for="speedSelect">PLAYBACK SPEED</label>
+                    <select id="speedSelect" class="tech-select">
+                      <option value="0.5">0.5× Slow-Mo</option>
+                      <option value="1" selected>1.0× Normal</option>
+                      <option value="1.5">1.5× Fast</option>
+                      <option value="2">2.0× Hyperlapse</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label for="audioModeSelect">AUDIO TRACK</label>
+                    <select id="audioModeSelect" class="tech-select">
+                      <option value="keep" selected>Keep Audio</option>
+                      <option value="mute">Mute / Strip Audio</option>
+                      <option value="extract">Extract Audio Only</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="control-row two-col">
+                  <div class="field-group">
+                    <label for="trimStart">VIDEO TRIM START (SEC)</label>
+                    <input type="text" id="trimStart" placeholder="e.g. 0 or 00:00:02" class="tech-input" />
+                  </div>
+                  <div class="field-group">
+                    <label for="trimEnd">VIDEO TRIM END (SEC)</label>
+                    <input type="text" id="trimEnd" placeholder="e.g. 10 or 00:00:15" class="tech-input" />
+                  </div>
+                </div>
+
+                <!-- Watermark & Output Naming -->
+                <div class="control-row two-col">
+                  <div class="field-group">
+                    <label for="watermarkText">WATERMARK OVERLAY TEXT</label>
+                    <input type="text" id="watermarkText" placeholder="Optional badge text..." class="tech-input" />
+                  </div>
+                  <div class="field-group">
+                    <label for="filenameSuffix">OUTPUT FILE SUFFIX</label>
+                    <input type="text" id="filenameSuffix" value="_ultra" class="tech-input" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Column 3: Step 03 Quantum Dropzone + Batch Processing Deck -->
+    <section class="processing-stage studio-col col-stage" aria-label="Media Dropzone and Batch Processing Queue">
+      <!-- Interactive Quantum Dropzone + Brand Hero Showcase -->
+      <div class="dropzone-card" id="dropzone" tabindex="0" role="button" aria-label="Upload or Drag and Drop Image, Video, or Audio Files">
+        <div class="laser-scanner" aria-hidden="true"></div>
+        <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.avif,.webp,.tiff,.tif,.ico,.bmp,.mkv,.flv,.mov,.avi,.wmv,.flac,.ogg,.opus" hidden />
+
+        <div class="dropzone-grid">
+          <div class="dropzone-copy">
+            <div class="dropzone-kicker">
+              <span class="pulse-pip"></span>
+              <span>MULTI-THREADED BATCH INGESTION BAY</span>
+            </div>
+            <h2 class="dropzone-headline">DROP IMAGES, VIDEOS &amp; AUDIO FILES HERE</h2>
+            <p class="dropzone-subtext">
+              Supports batch processing across <strong>PNG, JPG, WebP, AVIF, GIF, TIFF, SVG, ICO, BMP</strong> &amp; <strong>MP4, WebM, MOV, MKV, AVI, MP3, WAV, FLAC</strong>.
+            </p>
+            <div class="dropzone-buttons">
+              <button type="button" class="btn-tech btn-primary" id="btnBrowseFiles">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m8-8H4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+                <span>SELECT MEDIA FILES</span>
+              </button>
+              <button type="button" class="btn-tech btn-secondary" id="btnLoadDemo">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 10V3L4 14h7v7l9-11h-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                <span>LOAD DEMO MEDIA SUITE (4K IMG + 1080P VIDEO)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="dropzone-visual" id="heroTiltWrap">
+            <img src="/assets/hero-emblem.webp" alt="UltraSuperConvertor Quantum Media Core Diagram" class="hero-diagram-img" width="420" height="236" />
+            <div class="diagram-caption">FIG 1.0 // PHOTONIC TRANSCODING PIPELINE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Action Command Bar -->
+      <div class="batch-command-bar">
+        <div class="batch-command-left">
+          <span class="step-index">03</span>
+          <h2 class="batch-title">BATCH PROCESSING QUEUE</h2>
+          <span class="queue-counter-pill" id="queueFilterInfo">0 ITEMS READY</span>
+        </div>
+
+        <div class="batch-command-right">
+          <button type="button" class="btn-tech btn-ghost" id="btnClearQueue" disabled>
+            <span>CLEAR ALL</span>
+          </button>
+          <button type="button" class="btn-tech btn-outline" id="btnDownloadZip" disabled>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>DOWNLOAD ALL (.ZIP)</span>
+          </button>
+          <button type="button" class="btn-tech btn-launch" id="btnProcessAll" disabled>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
+            <span id="btnProcessLabel">EXECUTE BATCH CONVERSION</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Overall Batch Progress Bar -->
+      <div class="overall-progress-wrap" id="overallProgressWrap" hidden>
+        <div class="overall-progress-meta">
+          <span id="overallProgressText">PROCESSING BATCH QUEUE...</span>
+          <span id="overallProgressPct" class="mono-badge">0%</span>
+        </div>
+        <progress id="overallProgressBar" max="100" value="0" aria-label="Overall Batch Conversion Progress"></progress>
+      </div>
+
+      <!-- Queue Cards List (Scrollable inside Column 3) -->
+      <div class="queue-list scroller" id="queueList" role="region" aria-label="Queued Media Files">
+        <!-- Empty state shown when no files in queue -->
+        <div class="empty-queue-card" id="emptyQueueState">
+          <div class="empty-grid-icon" aria-hidden="true">
+            <span>RAW</span>
+            <span class="arrow">→</span>
+            <span class="opt">ULTRA</span>
+          </div>
+          <h3>NO MEDIA LOADED IN TRANSCODER BAY</h3>
+          <p>Drop images, videos, or audio files above — or click <strong>"LOAD DEMO MEDIA SUITE"</strong> to test 4K image &amp; 1080p video compression immediately.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Native Modal Dialog: Interactive Optical Before / After Split-Screen & Dual-Video Comparator -->
+  <dialog id="compareDialog" class="tech-dialog compare-dialog" closedby="any" aria-labelledby="compareDialogTitle">
+    <div class="dialog-header">
+      <div class="dialog-title-wrap">
+        <span class="tech-tag">OPTICAL INSPECTOR</span>
+        <h2 id="compareDialogTitle">BEFORE / AFTER QUALITY TELEMETRY</h2>
+      </div>
+      <div class="dialog-header-actions">
+        <!-- Video Mode Switcher (Hidden when comparing images) -->
+        <div id="videoCompareModeGroup" class="seg-group" hidden>
+          <button type="button" class="seg-btn active" id="btnVidModeSide">SIDE-BY-SIDE MONITORS</button>
+          <button type="button" class="seg-btn" id="btnVidModeSplit">SPLIT-CURTAIN OVERLAY</button>
+        </div>
+        <button type="button" class="btn-icon-close" id="btnCloseCompare" aria-label="Close Optical Inspector">✕</button>
+      </div>
+    </div>
+
+    <div class="compare-body">
+      <!-- Image Split Stage -->
+      <div class="compare-stage" id="compareStage">
+        <div class="split-viewport" id="splitViewport">
+          <img id="compareAfterImg" class="compare-img after-layer" alt="Optimized Output Preview" />
+          <div class="before-clip-layer" id="beforeClipLayer">
+            <img id="compareBeforeImg" class="compare-img before-layer" alt="Original Source Preview" />
+          </div>
+          <div class="split-divider" id="splitDivider" aria-hidden="true">
+            <div class="split-handle">↔</div>
+          </div>
+          <span class="compare-badge badge-before">ORIGINAL SOURCE</span>
+          <span class="compare-badge badge-after">ULTRA OPTIMIZED</span>
+        </div>
+
+        <input type="range" id="compareSlider" min="0" max="100" value="50" class="compare-range-overlay" aria-label="Split screen comparison slider" />
+      </div>
+
+      <!-- Video Synchronized Dual-Player Stage -->
+      <div class="video-compare-container" id="videoCompareStage" hidden>
+        <div class="video-compare-monitors mode-side" id="videoMonitorsWrap">
+          <div class="video-monitor-pane pane-before" id="vidBeforePane">
+            <video id="compareBeforeVideo" playsinline loop preload="metadata"></video>
+            <span class="compare-badge badge-before">ORIGINAL STREAM</span>
+          </div>
+          <div class="video-monitor-pane pane-after" id="vidAfterPane">
+            <video id="compareAfterVideo" playsinline loop preload="metadata"></video>
+            <span class="compare-badge badge-after">ULTRA OPTIMIZED STREAM</span>
+          </div>
+          <div class="split-divider" id="vidSplitDivider" hidden aria-hidden="true">
+            <div class="split-handle">↔</div>
+          </div>
+          <input type="range" id="vidCompareSlider" min="0" max="100" value="50" class="compare-range-overlay" hidden aria-label="Video split curtain slider" />
+        </div>
+
+        <!-- Synchronized Master Video Transport Bar -->
+        <div class="video-transport-bar">
+          <button type="button" class="btn-tech btn-primary" id="btnSyncPlayPause">
+            <span id="syncPlayLabel">▶ PLAY BOTH</span>
+          </button>
+          <span class="mono-badge" id="syncTimecode">00:00.0 / 00:00.0</span>
+          <input type="range" id="syncScrubber" min="0" max="100" step="0.01" value="0" class="tech-range sync-scrub-range" aria-label="Synchronized video timeline scrubber" />
+          <button type="button" class="btn-tech btn-outline" id="btnSyncSpeed" title="Toggle 1.0x / 0.5x Slow-Motion Inspection">
+            <span>1.0× SPEED</span>
+          </button>
+          <button type="button" class="btn-tech btn-outline" id="btnSyncMute">
+            <span>🔊 AUDIO ON</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="compare-telemetry-bar" id="compareTelemetryBar">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Native Modal Dialog: Interactive Crop, Aspect-Ratio Frame & Visual Watermark Positioner Studio -->
+  <dialog id="imageStudioDialog" class="tech-dialog studio-dialog" closedby="any" aria-labelledby="imageStudioTitle">
+    <div class="dialog-header">
+      <div class="dialog-title-wrap">
+        <span class="tech-tag">OPTICAL CROP &amp; WATERMARK STUDIO</span>
+        <h2 id="imageStudioTitle">INTERACTIVE GEOMETRY &amp; OVERLAY CANVAS</h2>
+      </div>
+      <button type="button" class="btn-icon-close" id="btnCloseImageStudio" aria-label="Close Optical Studio">✕</button>
+    </div>
+
+    <div class="studio-body">
+      <!-- Left: Interactive Canvas Viewport with Draggable Crop Box & Draggable Watermark -->
+      <div class="studio-viewport-col">
+        <div class="studio-toolbar">
+          <span class="toolbar-label">ASPECT RATIO LOCK:</span>
+          <div class="ratio-btn-group" id="cropRatioGroup">
+            <button type="button" class="seg-btn active" data-ratio="free">FREEFORM</button>
+            <button type="button" class="seg-btn" data-ratio="1.7778">16:9</button>
+            <button type="button" class="seg-btn" data-ratio="1">1:1</button>
+            <button type="button" class="seg-btn" data-ratio="1.3333">4:3</button>
+            <button type="button" class="seg-btn" data-ratio="0.5625">9:16</button>
+            <button type="button" class="seg-btn" data-ratio="2.3333">21:9</button>
+            <button type="button" class="seg-btn" id="btnResetCropBox">FULL FRAME</button>
+          </div>
+          <span class="mono-badge" id="cropPixelReadout">100% FULL FRAME</span>
+        </div>
+
+        <div class="studio-canvas-stage" id="studioCanvasStage">
+          <div class="studio-image-container" id="studioImageContainer">
+            <img id="studioPreviewImg" alt="Studio Crop and Watermark Preview" draggable="false" />
+
+            <!-- Interactive Crop Frame Overlay -->
+            <div class="crop-box-overlay" id="cropBoxOverlay">
+              <div class="crop-grid-lines" aria-hidden="true"></div>
+              <div class="crop-handle handle-nw" data-handle="nw"></div>
+              <div class="crop-handle handle-ne" data-handle="ne"></div>
+              <div class="crop-handle handle-sw" data-handle="sw"></div>
+              <div class="crop-handle handle-se" data-handle="se"></div>
+            </div>
+
+            <!-- Interactive Draggable Watermark Pill on Canvas -->
+            <div class="canvas-watermark-pill" id="canvasWatermarkPill" hidden title="Drag anywhere to position watermark">
+              <span id="canvasWatermarkText">ULTRASUPERCONVERTOR</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-hint-bar">
+          <span>💡 <strong>DRAG INSIDE CROP BOX</strong> to pan • <strong>DRAG CORNERS</strong> to resize crop • <strong>DRAG WATERMARK BADGE</strong> anywhere on image</span>
+        </div>
+      </div>
+
+      <!-- Right: Studio Watermark Styler & Action Controls -->
+      <div class="studio-controls-col">
+        <div class="studio-panel-section">
+          <h3>VISUAL WATERMARK DESIGNER</h3>
+          <div class="field-group">
+            <label for="studioWmText">WATERMARK TEXT</label>
+            <input type="text" id="studioWmText" placeholder="Type badge text (e.g. © STUDIO 2026)" class="tech-input" />
+          </div>
+
+          <div class="field-group">
+            <label for="studioWmStyle">BADGE VISUAL STYLE</label>
+            <select id="studioWmStyle" class="tech-select">
+              <option value="obsidian" selected>Obsidian Carbon Pill (Cyan Border)</option>
+              <option value="light">Alabaster Light Glass Pill</option>
+              <option value="cyber">Electric Cobalt Badge</option>
+              <option value="minimal">Pure Stencil Typography (No Box)</option>
+            </select>
+          </div>
+
+          <div class="field-group slider-box">
+            <div class="slider-header">
+              <label for="studioWmScale">BADGE SIZE SCALE</label>
+              <output id="studioWmScaleVal" class="mono-badge">100%</output>
+            </div>
+            <input type="range" id="studioWmScale" min="50" max="220" value="100" class="tech-range" />
+          </div>
+
+          <div class="field-group slider-box">
+            <div class="slider-header">
+              <label for="studioWmOpacity">BADGE OPACITY</label>
+              <output id="studioWmOpacityVal" class="mono-badge">90%</output>
+            </div>
+            <input type="range" id="studioWmOpacity" min="15" max="100" value="90" class="tech-range" />
+          </div>
+
+          <div class="field-group">
+            <label>QUICK SNAP ANCHOR (OR DRAG ON CANVAS)</label>
+            <div class="snap-anchor-grid">
+              <button type="button" class="snap-btn" data-x="0.16" data-y="0.12">↖ TOP-L</button>
+              <button type="button" class="snap-btn" data-x="0.50" data-y="0.12">↑ TOP-C</button>
+              <button type="button" class="snap-btn" data-x="0.84" data-y="0.12">↗ TOP-R</button>
+              <button type="button" class="snap-btn" data-x="0.16" data-y="0.50">← MID-L</button>
+              <button type="button" class="snap-btn" data-x="0.50" data-y="0.50">⊕ CENTER</button>
+              <button type="button" class="snap-btn" data-x="0.84" data-y="0.50">→ MID-R</button>
+              <button type="button" class="snap-btn" data-x="0.16" data-y="0.88">↙ BOT-L</button>
+              <button type="button" class="snap-btn" data-x="0.50" data-y="0.88">↓ BOT-C</button>
+              <button type="button" class="snap-btn" data-x="0.84" data-y="0.88">↘ BOT-R</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-actions-footer">
+          <button type="button" class="btn-tech btn-outline" id="btnStudioApplyAll">
+            <span>APPLY TO ALL IMAGES IN QUEUE</span>
+          </button>
+          <button type="button" class="btn-tech btn-secondary" id="btnStudioSaveSingle">
+            <span>SAVE FOR THIS IMAGE</span>
+          </button>
+          <button type="button" class="btn-tech btn-launch" id="btnStudioConvertNow">
+            <span>⚡ APPLY &amp; CONVERT NOW</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Native Modal Dialog: Interactive Video Timeline Scrubber & Visual Trim Handles -->
+  <dialog id="videoTrimmerDialog" class="tech-dialog trimmer-dialog" closedby="any" aria-labelledby="videoTrimmerTitle">
+    <div class="dialog-header">
+      <div class="dialog-title-wrap">
+        <span class="tech-tag">TEMPORAL SPLICE LAB</span>
+        <h2 id="videoTrimmerTitle">VIDEO TIMELINE SCRUBBER &amp; VISUAL TRIM HANDLES</h2>
+      </div>
+      <button type="button" class="btn-icon-close" id="btnCloseVideoTrimmer" aria-label="Close Video Trimmer">✕</button>
+    </div>
+
+    <div class="trimmer-body">
+      <div class="trimmer-video-stage">
+        <video id="trimmerVideoEl" playsinline preload="auto"></video>
+        <div class="trimmer-hud-overlay">
+          <span class="mono-badge" id="trimmerCurrentTime">PLAYHEAD: 00:00.00</span>
+          <span class="mono-badge highlight-cyan" id="trimmerClipDuration">CLIP LENGTH: 00:00.00</span>
+        </div>
+      </div>
+
+      <!--Playback & Frame-Step Transport -->
+      <div class="trimmer-transport-row">
+        <div class="transport-left">
+          <button type="button" class="btn-tech btn-primary" id="btnTrimmerPlayPause">▶ PLAY SEGMENT</button>
+          <button type="button" class="btn-tech btn-outline" id="btnTrimmerStepBack" title="Step Back 0.1s">⏮ -0.1s</button>
+          <button type="button" class="btn-tech btn-outline" id="btnTrimmerStepFwd" title="Step Forward 0.1s">+0.1s ⏭</button>
+          <label class="check-item" for="chkTrimmerLoop" style="padding:5px 10px;">
+            <input type="checkbox" id="chkTrimmerLoop" class="visually-hidden" checked />
+            <span>Loop Trimmed Range</span>
+          </label>
+        </div>
+
+        <div class="transport-right">
+          <button type="button" class="btn-tech btn-outline" id="btnSetInAtPlayhead">[ SET IN HERE</button>
+          <button type="button" class="btn-tech btn-outline" id="btnSetOutAtPlayhead">SET OUT HERE ]</button>
+          <button type="button" class="btn-tech btn-ghost" id="btnResetTrimRange">RESET FULL</button>
+        </div>
+      </div>
+
+      <!-- Visual Filmstrip Timeline Track with Draggable In/Out Handles & Playhead -->
+      <div class="timeline-track-wrapper">
+        <div class="timeline-ruler" id="timelineRuler">
+          <span>IN: <strong id="trimInReadout">0.00s</strong></span>
+          <span>DRAG HANDLES OR SCRUB PLAYHEAD</span>
+          <span>OUT: <strong id="trimOutReadout">3.00s</strong></span>
+        </div>
+
+        <div class="filmstrip-timeline" id="filmstripTimeline">
+          <!-- 6 Filmstrip thumbnails populated dynamically -->
+          <div class="filmstrip-frames" id="filmstripFrames"></div>
+
+          <!-- Dimmed masks outside [IN, OUT] -->
+          <div class="trim-mask trim-mask-left" id="trimMaskLeft"></div>
+          <div class="trim-mask trim-mask-right" id="trimMaskRight"></div>
+
+          <!-- Active selected range bracket + Draggable IN / OUT Handles -->
+          <div class="trim-selection-box" id="trimSelectionBox">
+            <div class="trim-drag-handle handle-in" id="trimHandleIn" role="slider" tabindex="0" aria-label="Trim Start Handle">
+              <span>IN</span>
+            </div>
+            <div class="trim-drag-handle handle-out" id="trimHandleOut" role="slider" tabindex="0" aria-label="Trim End Handle">
+              <span>OUT</span>
+            </div>
+          </div>
+
+          <!-- Playhead Scrubber Line -->
+          <div class="timeline-playhead" id="timelinePlayhead">
+            <div class="playhead-cap">▼</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-tech btn-secondary" id="btnSaveTrimOnly">
+          <span>SAVE TRIM POINTS</span>
+        </button>
+        <button type="button" class="btn-tech btn-launch" id="btnTrimAndConvertNow">
+          <span>⚡ APPLY TRIM &amp; CONVERT VIDEO NOW</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Native Modal Dialog: Output Folder Browser & File Manager -->
+  <dialog id="outputFolderDialog" class="tech-dialog studio-dialog" closedby="any" aria-labelledby="outputFolderTitle">
+    <div class="dialog-header">
+      <div class="dialog-title-wrap">
+        <span class="tech-tag">LOCAL DISK STORAGE // OUTPUT DIRECTORY</span>
+        <h2 id="outputFolderTitle">SAVED OUTPUT FILES</h2>
+      </div>
+      <div class="studio-header-controls">
+        <button type="button" class="btn-tech btn-outline btn-xs" id="btnCopyOutputPath" title="Copy local folder path to clipboard">
+          <span>📋 COPY FOLDER PATH</span>
+        </button>
+        <button type="button" class="btn-tech btn-outline btn-xs" id="btnTriggerWindowsExplorer" title="Open folder in Windows File Explorer">
+          <span>📂 LAUNCH EXPLORER</span>
+        </button>
+        <button type="button" class="btn-icon-close" id="btnCloseOutputDialog" aria-label="Close Output Folder Dialog">✕</button>
+      </div>
+    </div>
+
+    <div class="studio-dialog-body" style="padding:18px 22px;">
+      <div class="studio-coords-bar" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <span style="word-break:break-all;">LOCAL PATH: <strong id="outputFolderPathText">./outputs</strong></span>
+        <span id="outputFolderCountText" style="color:#00d2ff;font-weight:700;">0 SAVED FILES</span>
+      </div>
+
+      <div id="outputFilesList" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px;">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Confirmation Prompt when Delete All is clicked -->
+      <div id="deleteOutputsConfirmBox" style="padding:12px 16px;background:#fff1f2;border:1.5px solid #e11d48;border-radius:8px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;" hidden>
+        <span style="font-size:0.82rem;font-weight:700;color:#9f1239;">
+          ⚠️ Permanently delete all saved output files in <code>outputs/</code>?
+        </span>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn-tech btn-outline btn-xs" id="btnCancelClearOutputs">
+            <span>CANCEL</span>
+          </button>
+          <button type="button" class="btn-tech btn-danger-power btn-xs" id="btnConfirmClearOutputs">
+            <span>CONFIRM DELETE ALL</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dialog-actions" style="justify-content:space-between;">
+        <button type="button" class="btn-tech btn-ghost-sm" id="btnClearOutputsFolder">
+          <span>🗑 DELETE ALL SAVED OUTPUTS</span>
+        </button>
+        <div style="display:flex;gap:10px;">
+          <a href="/api/download-zip" class="btn-tech btn-emerald" id="btnDialogDownloadZip" style="text-decoration:none;">
+            <span>📦 DOWNLOAD ALL (.ZIP)</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Native Modal Dialog: GitHub Version Check & Auto-Updater -->
+  <dialog id="updateDialog" class="tech-dialog studio-dialog" closedby="any" aria-labelledby="updateDialogTitle" style="width:min(620px,94vw);">
+    <div class="dialog-header">
+      <div class="dialog-title-wrap">
+        <span class="tech-tag">GITHUB REPOSITORY SYNC</span>
+        <h2 id="updateDialogTitle">SOFTWARE UPDATE CHECKER</h2>
+      </div>
+      <div class="studio-header-controls">
+        <a href="https://github.com/kevindemara/UltraSuperConvertor" target="_blank" rel="noopener" class="btn-tech btn-outline btn-xs" style="text-decoration:none;">
+          <span>🌐 VIEW GITHUB REPO</span>
+        </a>
+        <button type="button" class="btn-icon-close" id="btnCloseUpdateDialog" aria-label="Close Update Dialog">✕</button>
+      </div>
+    </div>
+
+    <div class="studio-dialog-body" style="padding:18px 22px;display:flex;flex-direction:column;gap:12px;">
+      <div class="studio-coords-bar" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <span>INSTALLED: <strong id="updateLocalVerText">v2.4.0</strong></span>
+        <span>GITHUB LATEST: <strong id="updateRemoteVerText">Checking...</strong></span>
+        <span id="updateStatusBadge" style="color:#00d2ff;font-weight:800;">SCANNING REPO...</span>
+      </div>
+
+      <div id="updateStatusBanner" style="padding:14px 16px;background:#f8fafc;border:1.5px solid rgba(9,13,22,0.14);border-radius:8px;font-size:0.84rem;color:#090d16;">
+        Checking <code>kevindemara/UltraSuperConvertor</code> on GitHub for new releases or commits...
+      </div>
+
+      <pre id="updateTerminalLog" style="margin:0;padding:12px 14px;background:#090d16;color:#cbd5e1;border-radius:8px;font-family:var(--font-mono);font-size:0.74rem;max-height:160px;overflow-y:auto;white-space:pre-wrap;" hidden></pre>
+
+      <div class="dialog-actions" style="justify-content:space-between;">
+        <button type="button" class="btn-tech btn-outline" id="btnRecheckUpdates">
+          <span>↻ RE-CHECK GITHUB</span>
+        </button>
+        <button type="button" class="btn-tech btn-launch" id="btnApplyUpdateNow">
+          <span>⚡ PULL LATEST &amp; AUTO-UPDATE</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Native Modal Dialog: Stop Instance / Shutdown Confirmation -->
+  <dialog id="shutdownDialog" class="tech-dialog shutdown-dialog" closedby="any" aria-labelledby="shutdownDialogTitle">
+    <div class="dialog-header">
+      <div class="dialog-title-wrap">
+        <span class="tech-tag danger-tag">POWER MANAGEMENT</span>
+        <h2 id="shutdownDialogTitle">STOP ULTRASUPERCONVERTOR INSTANCE?</h2>
+      </div>
+      <button type="button" class="btn-icon-close" id="btnCancelShutdown" aria-label="Cancel Shutdown">✕</button>
+    </div>
+    <div class="shutdown-dialog-body">
+      <p>This will cleanly terminate the local <strong>UltraSuperConvertor</strong> server process (PID <code id="shutdownPidDisplay">--</code>) and release port <code>3847</code>. You can restart anytime using <code>start.cmd</code>.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn-tech btn-outline" id="btnDismissShutdown">KEEP RUNNING</button>
+        <button type="button" class="btn-tech btn-danger-power" id="btnConfirmShutdown">
+          <span class="power-led"></span>
+          <span>CONFIRM &amp; STOP INSTANCE NOW</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Full-Screen Offline Overlay when Instance is Stopped -->
+  <div id="offlineOverlay" class="offline-overlay" hidden>
+    <div class="offline-card">
+      <img src="/assets/logo-opt.png?v=2" alt="UltraSuperConvertor" width="76" height="76" class="offline-logo" />
+      <img src="/assets/wordmark.webp?v=2" alt="ULTRA SUPER CONVERTOR" class="offline-wordmark" height="26" />
+      <span class="tech-tag danger-tag">INSTANCE TERMINATED // PORT 3847 RELEASED</span>
+      <h2>ULTRASUPERCONVERTOR ENGINE OFFLINE</h2>
+      <p>The background Node.js &amp; FFmpeg server instance has been safely shut down. You may now close this browser tab, or run <code>start.cmd</code> to launch a new session.</p>
+    </div>
+  </div>
+
+  <script src="/app.js?v=7"></script>
+</body>
+</html>

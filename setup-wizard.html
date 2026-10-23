@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UltraSuperConvertor // Interactive HTML Setup &amp; Shortcut Wizard</title>
+  <link rel="icon" type="image/png" href="public/assets/favicon.png" />
+  <style>
+    :root {
+      --bg-canvas: #1a2234;
+      --bg-surface: #ffffff;
+      --bg-surface-alt: #edf2f8;
+      --ink-obsidian: #090d16;
+      --ink-carbon: #151d2e;
+      --ink-slate: #334155;
+      --ink-muted: #5b6b82;
+      --brand-color: #0055ff;
+      --brand-cyan: #00b8d9;
+      --brand-emerald: #10b981;
+      --brand-amber: #f59e0b;
+      --brand-danger: #e11d48;
+      --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background-color: var(--bg-canvas);
+      background-image: linear-gradient(155deg, #222c42 0%, #182032 50%, #121929 100%);
+      color: var(--ink-obsidian);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      display: grid;
+      place-items: center;
+      overflow-x: hidden;
+    }
+
+    .ambient-waves {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .wave-svg {
+      position: absolute;
+      left: 0;
+      width: 200%;
+      pointer-events: none;
+    }
+
+    .wave-layer-1 {
+      bottom: -10px;
+      height: 55vh;
+      fill: rgba(0, 85, 255, 0.11);
+      animation: waveFlowLeft 26s linear infinite;
+    }
+
+    .wave-layer-2 {
+      bottom: -24px;
+      height: 45vh;
+      fill: rgba(0, 210, 255, 0.08);
+      animation: waveFlowRight 34s linear infinite;
+    }
+
+    @keyframes waveFlowLeft {
+      from { translate: 0 0; }
+      to { translate: -50% 0; }
+    }
+
+    @keyframes waveFlowRight {
+      from { translate: -50% 0; }
+      to { translate: 0 0; }
+    }
+
+    .wizard-shell {
+      position: relative;
+      z-index: 1;
+      width: min(880px, 94vw);
+      margin: 24px auto;
+      background: var(--bg-surface);
+      border: 2px solid var(--ink-obsidian);
+      border-radius: 14px;
+      box-shadow:
+        0 4px 12px rgba(5, 8, 15, 0.25),
+        0 24px 48px -8px rgba(5, 8, 15, 0.45),
+        0 6px 0 var(--ink-obsidian);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .wizard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 18px 26px;
+      background: #ffffff;
+      border-bottom: 2px solid var(--ink-obsidian);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0, 85, 255, 0.25));
+    }
+
+    .brand-wordmark {
+      height: 28px;
+      width: auto;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .wizard-sub {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--brand-color);
+    }
+
+    .bridge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--ink-obsidian);
+      color: #ffffff;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .led {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-emerald);
+      box-shadow: 0 0 8px var(--brand-emerald);
+    }
+
+    .led.warn {
+      background: var(--brand-amber);
+      box-shadow: 0 0 8px var(--brand-amber);
+    }
+
+    /* Stepper Bar */
+    .stepper-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--ink-obsidian);
+      color: #94a3b8;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .step-tab {
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-right: 1px solid rgba(255, 255, 255, 0.12);
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    .step-tab.active {
+      color: #ffffff;
+      background: rgba(0, 85, 255, 0.25);
+      border-bottom-color: var(--brand-cyan);
+    }
+
+    .step-tab.done {
+      color: #34d399;
+    }
+
+    .step-num {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 20px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      font-size: 0.68rem;
+    }
+
+    .step-tab.active .step-num {
+      background: var(--brand-cyan);
+      color: var(--ink-obsidian);
+    }
+
+    .step-tab.done .step-num {
+      background: var(--brand-emerald);
+      color: var(--ink-obsidian);
+    }
+
+    /* Body Content */
+    .wizard-body {
+      padding: 26px 28px;
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .step-pane[hidden] {
+      display: none;
+    }
+
+    .pane-title {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--ink-obsidian);
+    }
+
+    .pane-desc {
+      margin: 0 0 18px;
+      color: var(--ink-slate);
+      font-size: 0.9rem;
+    }
+
+    /* Diagnostics Grid */
+    .diag-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .diag-card {
+      padding: 12px 14px;
+      background: var(--bg-surface-alt);
+      border: 1.5px solid rgba(9, 13, 22, 0.16);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .diag-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--ink-muted);
+      display: block;
+    }
+
+    .diag-value {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: var(--ink-obsidian);
+    }
+
+    .status-chip {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 800;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #6ee7b7;
+    }
+
+    .status-chip.pending {
+      background: #fffbeb;
+      color: #b45309;
+      border-color: #fcd34d;
+    }
+
+    /* Terminal Console Box */
+    .terminal-box {
+      background: var(--ink-obsidian);
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      padding: 14px 16px;
+      border-radius: 8px;
+      height: 185px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      border: 1.5px solid var(--ink-obsidian);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+      margin-top: 10px;
+    }
+
+    progress {
+      appearance: none;
+      border: 0 solid;
+      overflow: clip;
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+
+    progress::-webkit-progress-bar {
+      background: transparent;
+    }
+
+    progress::-webkit-progress-value {
+      background: linear-gradient(90deg, var(--brand-color), var(--brand-cyan));
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* Shortcut Option Cards */
+    .shortcut-options {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 18px;
+      align-items: center;
+    }
+
+    @media (max-width: 680px) {
+      .diag-grid, .shortcut-options {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-check-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 15px;
+      background: var(--bg-surface-alt);
+      border: 1.5px solid var(--ink-obsidian);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .option-check-card input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--brand-color);
+      cursor: pointer;
+    }
+
+    .option-title {
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--ink-obsidian);
+      display: block;
+    }
+
+    .option-sub {
+      font-size: 0.78rem;
+      color: var(--ink-slate);
+    }
+
+    /* Desktop Icon Preview Card */
+    .desktop-preview-card {
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      color: #ffffff;
+      border: 2px solid var(--ink-obsidian);
+      border-radius: 10px;
+      padding: 20px 14px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(9, 13, 22, 0.2);
+    }
+
+    .desktop-preview-card img {
+      width: 68px;
+      height: 68px;
+      filter: drop-shadow(0 4px 12px rgba(0, 210, 255, 0.35));
+    }
+
+    .desktop-icon-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    }
+
+    .desktop-preview-tag {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--brand-cyan);
+      letter-spacing: 0.08em;
+    }
+
+    /* Footer Navigation */
+    .wizard-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--ink-obsidian);
+      color: #ffffff;
+    }
+
+    .footer-status {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+
+    .footer-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-wiz {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .btn-wiz:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-wiz-secondary {
+      background: #1e293b;
+      color: #ffffff;
+      border-color: #475569;
+    }
+
+    .btn-wiz-primary {
+      background: var(--brand-color);
+      color: #ffffff;
+      border-color: var(--brand-cyan);
+    }
+
+    .btn-wiz-emerald {
+      background: var(--brand-emerald);
+      color: var(--ink-obsidian);
+      border-color: #ffffff;
+    }
+
+    .btn-wiz:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-waves" aria-hidden="true">
+    <svg class="wave-svg wave-layer-1" viewBox="0 0 2880 320" preserveAspectRatio="none">
+      <path d="M0,160 C480,270 960,50 1440,160 C1920,270 2400,50 2880,160 L2880,320 L0,320 Z" />
+    </svg>
+    <svg class="wave-svg wave-layer-2" viewBox="0 0 2880 320" preserveAspectRatio="none">
+      <path d="M0,190 C480,80 960,300 1440,190 C1920,80 2400,300 2880,190 L2880,320 L0,320 Z" />
+    </svg>
+  </div>
+
+  <div class="wizard-shell">
+    <!-- Top Brand Header -->
+    <header class="wizard-header">
+      <div class="brand-row">
+        <img id="wizLogoImg" src="/assets/logo-opt.png" onerror="this.src='public/assets/logo-opt.png'" alt="UltraSuperConvertor" class="brand-icon" />
+        <div>
+          <img id="wizWordmarkImg" src="/assets/wordmark.webp" onerror="this.src='public/assets/wordmark.png'" alt="ULTRA SUPER CONVERTOR" class="brand-wordmark" />
+          <p class="wizard-sub">HTML SETUP, DEPENDENCY &amp; DESKTOP ICON WIZARD // NO .EXE REQUIRED</p>
+        </div>
+      </div>
+
+      <div class="bridge-pill">
+        <span class="led" id="bridgeLed"></span>
+        <span id="bridgeStatusText">LOCAL ENGINE CONNECTED</span>
+      </div>
+    </header>
+
+    <!-- 4-Step Progress Bar -->
+    <nav class="stepper-bar" aria-label="Setup Wizard Steps">
+      <div class="step-tab active" data-step="1" id="tabStep1">
+        <span class="step-num">01</span>
+        <span>PRE-FLIGHT SCAN</span>
+      </div>
+      <div class="step-tab" data-step="2" id="tabStep2">
+        <span class="step-num">02</span>
+        <span>INSTALL PACKAGES</span>
+      </div>
+      <div class="step-tab" data-step="3" id="tabStep3">
+        <span class="step-num">03</span>
+        <span>DESKTOP SHORTCUT</span>
+      </div>
+      <div class="step-tab" data-step="4" id="tabStep4">
+        <span class="step-num">04</span>
+        <span>READY TO LAUNCH</span>
+      </div>
+    </nav>
+
+    <!-- Step Panes -->
+    <main class="wizard-body">
+      <!-- STEP 1: PRE-FLIGHT DIAGNOSTICS -->
+      <section class="step-pane" id="paneStep1">
+        <div>
+          <h1 class="pane-title">Step 1: System Pre-Flight &amp; Requirements Check</h1>
+          <p class="pane-desc">
+            This HTML Setup Wizard verifies your local Node.js runtime, NPM dependencies, Sharp (<code>libvips</code>) image core, and static FFmpeg 6.1 video/audio binaries without requiring any unsigned <code>.exe</code> installer.
+          </p>
+
+          <div class="diag-grid">
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">NODE.JS RUNTIME</span>
+                <strong class="diag-value" id="diagNode">Checking...</strong>
+              </div>
+              <span class="status-chip" id="chipNode">SCANNING</span>
+            </div>
+
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">SHARP IMAGE CORE (LIBVIPS)</span>
+                <strong class="diag-value" id="diagSharp">Checking...</strong>
+              </div>
+              <span class="status-chip" id="chipSharp">SCANNING</span>
+            </div>
+
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">FFMPEG 6.1 + FFPROBE STATIC</span>
+                <strong class="diag-value" id="diagFfmpeg">Checking...</strong>
+              </div>
+              <span class="status-chip" id="chipFfmpeg">SCANNING</span>
+            </div>
+
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">DESKTOP ICON (.ICO ASSET)</span>
+                <strong class="diag-value" id="diagIcon">UltraSuperConvertor.ico</strong>
+              </div>
+              <span class="status-chip" id="chipIcon">READY</span>
+            </div>
+          </div>
+
+          <div id="nodeInstallerCard" class="diag-card" style="background:#f8fafc;border-color:rgba(9,13,22,0.18);margin-bottom:10px;flex-wrap:wrap;gap:12px;">
+            <div style="flex:1;min-width:240px;">
+              <span class="diag-label" style="color:#0055ff;">NODE.JS LTS RUNTIME INSTALLER (FOR NEW PCS)</span>
+              <span style="font-size:0.81rem;color:#334155;display:block;margin-top:2px;">
+                Don't have Node.js installed yet? Running <code>setup-wizard.cmd</code> will automatically install <strong>Node.js LTS</strong> for you, or you can download the official signed Windows <code>.msi</code> installer directly below:
+              </span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <a href="https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi" class="btn-wiz btn-wiz-primary" style="text-decoration:none;padding:8px 14px;font-size:0.72rem;">
+                ⬇ DOWNLOAD NODE.JS LTS (.MSI)
+              </a>
+              <a href="https://nodejs.org/en/download" target="_blank" rel="noopener" class="btn-wiz btn-wiz-secondary" style="text-decoration:none;padding:8px 14px;font-size:0.72rem;">
+                🌐 NODEJS.ORG
+              </a>
+            </div>
+          </div>
+
+          <div id="fileProtocolNotice" class="diag-card" style="background:#eff6ff;border-color:#0055ff;" hidden>
+            <div>
+              <span class="diag-label" style="color:#0055ff;">LOCAL WIZARD BRIDGE</span>
+              <span style="font-size:0.82rem;">Once Node.js is installed, double-click <code>setup-wizard.cmd</code> in your project folder to start the local wizard bridge on port <code>3847</code>, then click <strong>RETRY CONNECT</strong>.</span>
+            </div>
+            <button type="button" class="btn-wiz btn-wiz-primary" id="btnRetryBridge">RETRY CONNECT</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: PACKAGE & BINARY ENGINE INSTALLATION -->
+      <section class="step-pane" id="paneStep2" hidden>
+        <div>
+          <h1 class="pane-title">Step 2: Verify &amp; Install Dependencies</h1>
+          <p class="pane-desc">
+            Installs and verifies all required packages from <code>package.json</code> (<code>express</code>, <code>sharp</code>, <code>multer</code>, <code>archiver</code>, <code>ffmpeg-static</code>, <code>ffprobe-static</code>) and prepares the <code>uploads/</code> and <code>outputs/</code> directories.
+          </p>
+
+          <progress id="installProgressBar" max="100" value="0"></progress>
+          <div class="terminal-box" id="installTerminalLog">[READY] Click "RUN DEPENDENCY INSTALLER" below to verify and install all packages...</div>
+        </div>
+      </section>
+
+      <!-- STEP 3: DESKTOP ICON & START MENU SHORTCUTS -->
+      <section class="step-pane" id="paneStep3" hidden>
+        <div>
+          <h1 class="pane-title">Step 3: Create Desktop Icon &amp; Start Menu Shortcut</h1>
+          <p class="pane-desc">
+            Add a native Windows shortcut (<code>UltraSuperConvertor.lnk</code>) with the custom multi-resolution aperture icon (<code>UltraSuperConvertor.ico</code>) directly to your Desktop and Start Menu.
+          </p>
+
+          <div class="shortcut-options">
+            <div>
+              <label class="option-check-card" for="chkCreateDesktop">
+                <input type="checkbox" id="chkCreateDesktop" checked />
+                <div>
+                  <span class="option-title">Add "UltraSuperConvertor" Icon to Windows Desktop</span>
+                  <span class="option-sub">Creates a Desktop shortcut that starts the server and opens the browser GUI automatically.</span>
+                </div>
+              </label>
+
+              <label class="option-check-card" for="chkCreateStartMenu">
+                <input type="checkbox" id="chkCreateStartMenu" checked />
+                <div>
+                  <span class="option-title">Add "UltraSuperConvertor" to Windows Start Menu</span>
+                  <span class="option-sub">Registers UltraSuperConvertor in your Start Menu Programs list for instant search access.</span>
+                </div>
+              </label>
+
+              <div id="shortcutResultBox" class="diag-card" style="margin-top:8px;" hidden>
+                <div>
+                  <span class="diag-label">SHORTCUT STATUS</span>
+                  <strong class="diag-value" id="shortcutResultText">Created on Desktop!</strong>
+                </div>
+                <span class="status-chip">CREATED</span>
+              </div>
+            </div>
+
+            <div class="desktop-preview-card">
+              <span class="desktop-preview-tag">DESKTOP ICON PREVIEW</span>
+              <img src="/assets/logo-opt.png" onerror="this.src='public/assets/logo-opt.png'" alt="Desktop Shortcut Preview" />
+              <span class="desktop-icon-label">UltraSuperConvertor</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 4: COMPLETE & LAUNCH -->
+      <section class="step-pane" id="paneStep4" hidden>
+        <div>
+          <h1 class="pane-title" style="color:#059669;">✓ Setup Complete — UltraSuperConvertor is Ready!</h1>
+          <p class="pane-desc">
+            All dependencies, image/video engines, and Windows shortcuts are configured. You can launch the application anytime from your <strong>Desktop Icon</strong>, <code>start.cmd</code>, or the button below.
+          </p>
+
+          <div class="diag-grid">
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">WEB STUDIO ADDRESS</span>
+                <strong class="diag-value">http://localhost:3847</strong>
+              </div>
+              <span class="status-chip">ONLINE</span>
+            </div>
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">DESKTOP SHORTCUT</span>
+                <strong class="diag-value" id="summaryShortcutStatus">Configured</strong>
+              </div>
+              <span class="status-chip">READY</span>
+            </div>
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">START SCRIPT</span>
+                <strong class="diag-value">start.cmd (or Desktop Icon)</strong>
+              </div>
+              <span class="status-chip">VERIFIED</span>
+            </div>
+            <div class="diag-card">
+              <div>
+                <span class="diag-label">STOP INSTANCE</span>
+                <strong class="diag-value">GUI Button or stop.cmd</strong>
+              </div>
+              <span class="status-chip">VERIFIED</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Wizard Bar -->
+    <footer class="wizard-footer">
+      <span class="footer-status" id="wizardFooterStatus">STEP 1 OF 4 // PRE-FLIGHT DIAGNOSTICS</span>
+      <div class="footer-btns">
+        <button type="button" class="btn-wiz btn-wiz-secondary" id="btnPrevStep" disabled>← BACK</button>
+        <button type="button" class="btn-wiz btn-wiz-primary" id="btnNextStep">CONTINUE TO STEP 2 →</button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3847' : '';
+      let currentStep = 1;
+      let installDone = false;
+
+      const tabEls = [1, 2, 3, 4].map((n) => document.getElementById(`tabStep${n}`));
+      const paneEls = [1, 2, 3, 4].map((n) => document.getElementById(`paneStep${n}`));
+      const btnPrevStep = document.getElementById('btnPrevStep');
+      const btnNextStep = document.getElementById('btnNextStep');
+      const wizardFooterStatus = document.getElementById('wizardFooterStatus');
+
+      const bridgeLed = document.getElementById('bridgeLed');
+      const bridgeStatusText = document.getElementById('bridgeStatusText');
+      const fileProtocolNotice = document.getElementById('fileProtocolNotice');
+      const btnRetryBridge = document.getElementById('btnRetryBridge');
+
+      const diagNode = document.getElementById('diagNode');
+      const chipNode = document.getElementById('chipNode');
+      const diagSharp = document.getElementById('diagSharp');
+      const chipSharp = document.getElementById('chipSharp');
+      const diagFfmpeg = document.getElementById('diagFfmpeg');
+      const chipFfmpeg = document.getElementById('chipFfmpeg');
+      const diagIcon = document.getElementById('diagIcon');
+      const chipIcon = document.getElementById('chipIcon');
+
+      const installProgressBar = document.getElementById('installProgressBar');
+      const installTerminalLog = document.getElementById('installTerminalLog');
+
+      const chkCreateDesktop = document.getElementById('chkCreateDesktop');
+      const chkCreateStartMenu = document.getElementById('chkCreateStartMenu');
+      const shortcutResultBox = document.getElementById('shortcutResultBox');
+      const shortcutResultText = document.getElementById('shortcutResultText');
+      const summaryShortcutStatus = document.getElementById('summaryShortcutStatus');
+
+      async function checkPreflight() {
+        try {
+          const res = await fetch(`${API_BASE}/api/wizard/preflight`);
+          const data = await res.json();
+          bridgeLed.classList.remove('warn');
+          bridgeStatusText.textContent = `LOCAL ENGINE ONLINE (PID ${data.pid})`;
+          fileProtocolNotice.hidden = true;
+
+          diagNode.textContent = data.nodeVersion || 'Detected';
+          chipNode.textContent = 'INSTALLED';
+          chipNode.className = 'status-chip';
+
+          diagSharp.textContent = data.sharpReady ? `Sharp v${data.sharpVersion} (libvips ${data.vipsVersion})` : 'Pending Install';
+          chipSharp.textContent = data.sharpReady ? 'READY' : 'NEEDS INSTALL';
+          chipSharp.className = data.sharpReady ? 'status-chip' : 'status-chip pending';
+
+          diagFfmpeg.textContent = data.ffmpegReady ? 'FFmpeg 6.1 + FFprobe Ready' : 'Pending Install';
+          chipFfmpeg.textContent = data.ffmpegReady ? 'READY' : 'NEEDS INSTALL';
+          chipFfmpeg.className = data.ffmpegReady ? 'status-chip' : 'status-chip pending';
+
+          diagIcon.textContent = data.desktopShortcutExists ? 'Desktop Icon Already Present' : 'UltraSuperConvertor.ico Ready';
+          chipIcon.textContent = data.desktopShortcutExists ? 'INSTALLED' : 'READY';
+        } catch (err) {
+          bridgeLed.classList.add('warn');
+          bridgeStatusText.textContent = 'RUN setup-wizard.cmd TO CONNECT';
+          fileProtocolNotice.hidden = false;
+          diagNode.textContent = 'Waiting for local bridge...';
+          chipNode.textContent = 'OFFLINE';
+          chipNode.className = 'status-chip pending';
+        }
+      }
+
+      btnRetryBridge?.addEventListener('click', checkPreflight);
+
+      function goToStep(step) {
+        currentStep = step;
+        paneEls.forEach((p, idx) => {
+          p.hidden = idx + 1 !== step;
+        });
+        tabEls.forEach((t, idx) => {
+          t.classList.toggle('active', idx + 1 === step);
+          t.classList.toggle('done', idx + 1 < step);
+        });
+
+        btnPrevStep.disabled = step === 1;
+
+        if (step === 1) {
+          wizardFooterStatus.textContent = 'STEP 1 OF 4 // PRE-FLIGHT DIAGNOSTICS';
+          btnNextStep.textContent = 'CONTINUE TO STEP 2 →';
+          btnNextStep.className = 'btn-wiz btn-wiz-primary';
+        } else if (step === 2) {
+          wizardFooterStatus.textContent = 'STEP 2 OF 4 // DEPENDENCY & CODEC ENGINE INSTALLER';
+          btnNextStep.textContent = installDone ? 'CONTINUE TO STEP 3 →' : '⚡ VERIFY & INSTALL PACKAGES';
+          btnNextStep.className = 'btn-wiz btn-wiz-primary';
+        } else if (step === 3) {
+          wizardFooterStatus.textContent = 'STEP 3 OF 4 // DESKTOP ICON & START MENU SHORTCUTS';
+          btnNextStep.textContent = 'APPLY SHORTCUTS & CONTINUE →';
+          btnNextStep.className = 'btn-wiz btn-wiz-primary';
+        } else if (step === 4) {
+          wizardFooterStatus.textContent = 'STEP 4 OF 4 // SETUP COMPLETE';
+          btnNextStep.textContent = '🚀 OPEN ULTRASUPERCONVERTOR STUDIO';
+          btnNextStep.className = 'btn-wiz btn-wiz-emerald';
+        }
+      }
+
+      tabEls.forEach((tab, idx) => {
+        tab.addEventListener('click', () => goToStep(idx + 1));
+      });
+
+      btnPrevStep.addEventListener('click', () => {
+        if (currentStep > 1) goToStep(currentStep - 1);
+      });
+
+      btnNextStep.addEventListener('click', async () => {
+        if (currentStep === 1) {
+          goToStep(2);
+        } else if (currentStep === 2) {
+          if (installDone) {
+            goToStep(3);
+            return;
+          }
+          btnNextStep.disabled = true;
+          btnNextStep.textContent = 'INSTALLING & VERIFYING...';
+          installProgressBar.value = 20;
+          installTerminalLog.textContent = '[1/3] Running npm install & verifying native packages...\n';
+          try {
+            const res = await fetch(`${API_BASE}/api/wizard/install`, { method: 'POST' });
+            const data = await res.json();
+            installProgressBar.value = 100;
+            installTerminalLog.textContent += (data.log || 'Packages verified!') + '\n[COMPLETE] All dependencies and binaries are ready!';
+            installDone = true;
+            btnNextStep.textContent = 'CONTINUE TO STEP 3 →';
+            await checkPreflight();
+          } catch (err) {
+            installTerminalLog.textContent += `\n[ERROR] Could not reach local wizard bridge. Please run setup-wizard.cmd.`;
+            btnNextStep.textContent = 'RETRY INSTALL';
+          } finally {
+            btnNextStep.disabled = false;
+          }
+        } else if (currentStep === 3) {
+          btnNextStep.disabled = true;
+          btnNextStep.textContent = 'CREATING SHORTCUTS...';
+          try {
+            const res = await fetch(`${API_BASE}/api/wizard/shortcut`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                desktop: chkCreateDesktop.checked,
+                startMenu: chkCreateStartMenu.checked
+              })
+            });
+            const data = await res.json();
+            shortcutResultBox.hidden = false;
+            shortcutResultText.textContent = data.message || 'Shortcuts updated!';
+            summaryShortcutStatus.textContent = data.message || 'Configured';
+            setTimeout(() => goToStep(4), 450);
+          } catch (err) {
+            summaryShortcutStatus.textContent = 'Run setup-wizard.cmd to create shortcuts';
+            goToStep(4);
+          } finally {
+            btnNextStep.disabled = false;
+          }
+        } else if (currentStep === 4) {
+          window.location.href = `${API_BASE || ''}/`;
+        }
+      });
+
+      checkPreflight();
+    })();
+  </script>
+</body>
+</html>

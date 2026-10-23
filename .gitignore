@@ -1,0 +1,10 @@
+node_modules/
+.server.pid
+uploads/*
+!uploads/.gitkeep
+outputs/*
+!outputs/.gitkeep
+public/assets/wordmark-raw.jpg
+*.log
+.DS_Store
+Thumbs.db
