@@ -2172,29 +2172,46 @@ progress::-moz-progress-bar {
 
 .trimmer-video-stage {
   position: relative;
-  height: 360px;
+  --video-aspect: 16 / 9;
+  aspect-ratio: var(--video-aspect);
+  height: clamp(260px, 44vh, 390px);
+  width: auto;
+  max-width: 100%;
+  margin-inline: auto;
   background: #05080f;
   border: 2px solid var(--ink-obsidian);
   border-radius: 10px;
   overflow: hidden;
   display: grid;
   place-items: center;
+  box-shadow: 0 10px 28px rgba(5, 8, 15, 0.35);
+}
+
+.trimmer-video-stage.is-portrait {
+  height: clamp(320px, 52vh, 480px);
 }
 
 #trimmerVideoEl {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
 }
 
 .trimmer-hud-overlay {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  inset: 10px;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
   pointer-events: none;
+}
+
+.trimmer-video-stage.is-portrait .trimmer-hud-overlay {
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .mono-badge.highlight-cyan {
@@ -2271,6 +2288,15 @@ progress::-moz-progress-bar {
   height: 100%;
   object-fit: cover;
   border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.filmstrip-timeline.is-portrait {
+  height: 86px;
+}
+
+.filmstrip-timeline.is-portrait .filmstrip-frames img {
+  object-fit: contain;
+  background: #090d16;
 }
 
 .trim-mask {

@@ -103,9 +103,25 @@ function probeMedia(filePath) {
             const parts = videoStream.r_frame_rate.split('/').map(Number);
             if (parts.length === 2 && parts[1] > 0) fps = Math.round((parts[0] / parts[1]) * 100) / 100;
           }
+
+          let width = videoStream?.width || null;
+          let height = videoStream?.height || null;
+
+          // Account for rotation metadata on portrait phone videos (90 / -90 / 270 deg)
+          let rotation = parseInt(videoStream?.tags?.rotate || '0', 10);
+          if (!rotation && Array.isArray(videoStream?.side_data_list)) {
+            const rotSide = videoStream.side_data_list.find((sd) => sd.rotation !== undefined);
+            if (rotSide) rotation = parseInt(rotSide.rotation, 10) || 0;
+          }
+          if (width && height && (Math.abs(rotation) === 90 || Math.abs(rotation) === 270)) {
+            const tmp = width;
+            width = height;
+            height = tmp;
+          }
+
           resolve({
-            width: videoStream?.width || null,
-            height: videoStream?.height || null,
+            width,
+            height,
             duration: duration || null,
             videoCodec: videoStream?.codec_name || null,
             audioCodec: audioStream?.codec_name || null,
@@ -688,12 +704,17 @@ async function processVideoOrAudioItem(item, baseSettings) {
       args.push('-c:a', 'libopus', '-b:a', aBitrate);
     }
   } else if (outFormat === 'gif' || outFormat === 'webp') {
-    // High quality animated GIF / WebP
+    // High quality animated GIF / WebP (orientation-aware for portrait & landscape)
     const fps = parseInt(settings.fps, 10) || 15;
-    const resHeight = parseInt(settings.videoResolution, 10) || 480;
+    const resTarget = parseInt(settings.videoResolution, 10) || 480;
+    const isPortrait = item.height && item.width && item.height > item.width;
     const vfParts = [`fps=${fps}`];
-    if (resHeight && resHeight > 0) {
-      vfParts.push(`scale=-2:'min(${resHeight},ih)':flags=lanczos`);
+    if (resTarget && resTarget > 0) {
+      if (isPortrait) {
+        vfParts.push(`scale='min(${resTarget},iw)':-2:flags=lanczos`);
+      } else {
+        vfParts.push(`scale=-2:'min(${resTarget},ih)':flags=lanczos`);
+      }
     }
     if (outFormat === 'gif') {
       vfParts.push('split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer');
@@ -707,15 +728,20 @@ async function processVideoOrAudioItem(item, baseSettings) {
     // Standard video transcode / compression / resize
     const vFilters = [];
 
-    // Resolution scaling
+    // Resolution scaling (orientation-aware so 1080p/720p preserves portrait aspect ratio)
     const vRes = settings.videoResolution || 'original';
+    const isPortrait = item.height && item.width && item.height > item.width;
     if (vRes === 'custom' && (settings.width || settings.height)) {
       const w = parseInt(settings.width, 10) ? Math.floor(parseInt(settings.width, 10) / 2) * 2 : -2;
       const h = parseInt(settings.height, 10) ? Math.floor(parseInt(settings.height, 10) / 2) * 2 : -2;
       vFilters.push(`scale=${w}:${h}`);
     } else if (['2160', '1440', '1080', '720', '480', '360'].includes(String(vRes))) {
-      const targetH = parseInt(vRes, 10);
-      vFilters.push(`scale=-2:'min(${targetH},ih)'`);
+      const targetEdge = parseInt(vRes, 10);
+      if (isPortrait) {
+        vFilters.push(`scale='min(${targetEdge},iw)':-2`);
+      } else {
+        vFilters.push(`scale=-2:'min(${targetEdge},ih)'`);
+      }
     } else {
       // Ensure even dimensions for YUV420p compatibility
       vFilters.push('scale=trunc(iw/2)*2:trunc(ih/2)*2');

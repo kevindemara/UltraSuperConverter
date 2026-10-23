@@ -1553,10 +1553,24 @@
 
   setupDialogLightDismiss(videoTrimmerDialog);
 
+  const trimmerVideoStage = videoTrimmerDialog?.querySelector('.trimmer-video-stage');
   let activeTrimmerItem = null;
   let vidTotalDuration = 3.0;
   let trimInSec = 0.0;
   let trimOutSec = 3.0;
+
+  function syncTrimmerViewportAspect(w, h) {
+    const validW = Number(w) || 16;
+    const validH = Number(h) || 9;
+    const isPortrait = validH > validW;
+    if (trimmerVideoStage) {
+      trimmerVideoStage.style.setProperty('--video-aspect', `${validW} / ${validH}`);
+      trimmerVideoStage.classList.toggle('is-portrait', isPortrait);
+    }
+    if (filmstripTimeline) {
+      filmstripTimeline.classList.toggle('is-portrait', isPortrait);
+    }
+  }
 
   async function openVideoTrimmer(item) {
     activeTrimmerItem = item;
@@ -1564,6 +1578,8 @@
     const sc = item.studioConfig || {};
     trimInSec = sc.trimStart !== undefined ? parseFloat(sc.trimStart) || 0 : 0;
     trimOutSec = sc.trimEnd !== undefined ? parseFloat(sc.trimEnd) || vidTotalDuration : vidTotalDuration;
+
+    syncTrimmerViewportAspect(item.width || 16, item.height || 9);
 
     trimmerVideoEl.src = item.inputUrl;
     trimmerVideoEl.currentTime = trimInSec;
@@ -1627,6 +1643,9 @@
 
   trimmerVideoEl?.addEventListener('timeupdate', updateTrimmerPlayhead);
   trimmerVideoEl?.addEventListener('loadedmetadata', () => {
+    if (trimmerVideoEl.videoWidth && trimmerVideoEl.videoHeight) {
+      syncTrimmerViewportAspect(trimmerVideoEl.videoWidth, trimmerVideoEl.videoHeight);
+    }
     if (trimmerVideoEl.duration && isFinite(trimmerVideoEl.duration)) {
       vidTotalDuration = trimmerVideoEl.duration;
       if (trimOutSec > vidTotalDuration) trimOutSec = vidTotalDuration;
