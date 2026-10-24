@@ -5,6 +5,7 @@ const heicConvert = require('heic-convert');
 const ffmpegPath = require('ffmpeg-static');
 const ffprobePath = require('ffprobe-static').path;
 const archiver = require('archiver');
+const yauzl = require('yauzl');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
@@ -257,8 +258,146 @@ async function inspectAndRegisterFile(fileObj) {
     }
   }
 
+  if (fileObj.sourceZip) {
+    item.sourceZip = fileObj.sourceZip;
+    item.zipRelDir = fileObj.zipRelDir || '';
+  }
+
   mediaStore.set(id, item);
   return item;
+}
+
+// ==================== ZIP ARCHIVE INGESTION ====================
+
+// Safety limits to guard against zip bombs and runaway archives
+const ZIP_LIMITS = {
+  maxEntries: 1000,
+  maxEntryBytes: 2 * 1024 * 1024 * 1024, // 2GB per extracted file
+  maxTotalBytes: 6 * 1024 * 1024 * 1024 // 6GB total extracted per archive
+};
+
+const ZIP_JUNK_NAMES = new Set(['thumbs.db', 'desktop.ini', '.ds_store']);
+
+function isZipFile(name) {
+  return path.extname(name || '').toLowerCase() === '.zip';
+}
+
+// Normalize an archive entry path and reject anything that could escape the archive root
+function sanitizeZipEntryPath(entryName) {
+  const normalized = path.posix.normalize(String(entryName).replace(/\\/g, '/'));
+  if (!normalized || normalized.startsWith('/') || /^[a-zA-Z]:/.test(normalized)) return null;
+  const parts = normalized.split('/').filter(Boolean);
+  if (parts.some((p) => p === '..' || p === '.')) return null;
+  return parts;
+}
+
+// Extract supported media from a ZIP into uploads and register each file as its own queue item
+function extractZipToItems(zipPath, zipDisplayName) {
+  return new Promise((resolve, reject) => {
+    const extracted = [];
+    const skipped = [];
+    let totalBytes = 0;
+    let entryCount = 0;
+    let aborted = false;
+
+    yauzl.open(zipPath, { lazyEntries: true, decodeStrings: true, validateEntrySizes: true }, (openErr, zipfile) => {
+      if (openErr) return reject(new Error(`"${zipDisplayName}" could not be opened. It may be damaged or not a real ZIP file.`));
+
+      const fail = (err) => {
+        if (aborted) return;
+        aborted = true;
+        try { zipfile.close(); } catch (_) {}
+        // Remove anything already written from this archive
+        extracted.forEach((f) => fs.promises.unlink(f.path).catch(() => {}));
+        reject(err);
+      };
+
+      zipfile.on('error', fail);
+      zipfile.on('end', () => {
+        if (!aborted) resolve({ extracted, skipped });
+      });
+
+      zipfile.on('entry', (entry) => {
+        if (aborted) return;
+        entryCount += 1;
+        if (entryCount > ZIP_LIMITS.maxEntries) {
+          return fail(new Error(`"${zipDisplayName}" has more than ${ZIP_LIMITS.maxEntries} files. Please split it into smaller ZIPs.`));
+        }
+
+        // Directory entries
+        if (/\/$/.test(entry.fileName)) return zipfile.readEntry();
+
+        const parts = sanitizeZipEntryPath(entry.fileName);
+        if (!parts || parts.length === 0) {
+          skipped.push({ name: entry.fileName, reason: 'Unsafe file path' });
+          return zipfile.readEntry();
+        }
+
+        const baseName = parts[parts.length - 1];
+        const lowerBase = baseName.toLowerCase();
+        const isJunk = parts[0] === '__MACOSX' || baseName.startsWith('.') || baseName.startsWith('._') || ZIP_JUNK_NAMES.has(lowerBase);
+        if (isJunk) return zipfile.readEntry();
+
+        const relPath = parts.join('/');
+        if (isZipFile(baseName)) {
+          skipped.push({ name: relPath, reason: 'ZIPs inside ZIPs are not unpacked' });
+          return zipfile.readEntry();
+        }
+        if (getMediaType(baseName) === 'unknown') {
+          skipped.push({ name: relPath, reason: 'Unsupported file type' });
+          return zipfile.readEntry();
+        }
+        if (entry.uncompressedSize > ZIP_LIMITS.maxEntryBytes) {
+          skipped.push({ name: relPath, reason: 'File is larger than 2 GB' });
+          return zipfile.readEntry();
+        }
+        if (totalBytes + entry.uncompressedSize > ZIP_LIMITS.maxTotalBytes) {
+          return fail(new Error(`"${zipDisplayName}" expands to more than 6 GB. Please split it into smaller ZIPs.`));
+        }
+
+        zipfile.openReadStream(entry, (streamErr, readStream) => {
+          if (streamErr) {
+            skipped.push({ name: relPath, reason: 'Could not read file' });
+            return zipfile.readEntry();
+          }
+
+          const safeBase = baseName.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const destName = `${Date.now()}_${crypto.randomBytes(6).toString('hex')}_${safeBase}`;
+          const destPath = path.join(UPLOADS_DIR, destName);
+          const writeStream = fs.createWriteStream(destPath);
+          let entryBytes = 0;
+
+          // Count real bytes as they stream, rather than trusting the archive header
+          readStream.on('data', (chunk) => {
+            entryBytes += chunk.length;
+            totalBytes += chunk.length;
+            if (entryBytes > ZIP_LIMITS.maxEntryBytes || totalBytes > ZIP_LIMITS.maxTotalBytes) {
+              readStream.destroy(new Error(`"${zipDisplayName}" expands beyond the safe size limit.`));
+            }
+          });
+          readStream.on('error', (err) => {
+            writeStream.destroy();
+            fs.promises.unlink(destPath).catch(() => {});
+            fail(err);
+          });
+          writeStream.on('error', (err) => fail(err));
+          writeStream.on('finish', () => {
+            if (aborted) return;
+            extracted.push({
+              originalname: baseName,
+              path: destPath,
+              sourceZip: zipDisplayName,
+              zipRelDir: parts.slice(0, -1).join('/')
+            });
+            zipfile.readEntry();
+          });
+          readStream.pipe(writeStream);
+        });
+      });
+
+      zipfile.readEntry();
+    });
+  });
 }
 
 // Helper: Encode raw RGBA/RGB buffer to BMP
@@ -941,12 +1080,38 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
       return res.status(400).json({ error: 'No files uploaded' });
     }
     const registered = [];
+    const skipped = [];
+    const zipErrors = [];
     for (const f of req.files) {
+      if (isZipFile(f.originalname)) {
+        try {
+          const { extracted, skipped: zipSkipped } = await extractZipToItems(f.path, f.originalname);
+          for (const ef of extracted) {
+            registered.push(await inspectAndRegisterFile(ef));
+          }
+          zipSkipped.forEach((s) => skipped.push({ ...s, zip: f.originalname }));
+          if (extracted.length === 0) {
+            zipErrors.push(`No supported images, videos, or audio were found in "${f.originalname}".`);
+          }
+        } catch (zipErr) {
+          zipErrors.push(zipErr.message);
+        } finally {
+          fs.promises.unlink(f.path).catch(() => {});
+        }
+        continue;
+      }
+      if (getMediaType(f.originalname) === 'unknown') {
+        skipped.push({ name: f.originalname, reason: 'Unsupported file type' });
+        fs.promises.unlink(f.path).catch(() => {});
+        continue;
+      }
       const item = await inspectAndRegisterFile(f);
       registered.push(item);
     }
-    broadcastEvent('files-added', { items: registered });
-    res.json({ items: registered });
+    if (registered.length > 0) {
+      broadcastEvent('files-added', { items: registered });
+    }
+    res.json({ items: registered, skipped, errors: zipErrors });
   } catch (err) {
     console.error('Upload error:', err);
     res.status(500).json({ error: err.message });
@@ -1161,19 +1326,54 @@ app.delete('/api/items/:id', (req, res) => {
 });
 
 // Download all completed outputs as a single ZIP archive
+// Files that came from an uploaded ZIP keep their original folder structure inside the download
 app.get('/api/download-zip', (req, res) => {
-  const completed = Array.from(mediaStore.values()).filter((i) => i.status === 'completed' && i.output);
-  let filesToZip = completed.map((i) => i.output.fileName);
+  const completed = Array.from(mediaStore.values()).filter(
+    (i) => i.status === 'completed' && i.output && fs.existsSync(path.join(OUTPUTS_DIR, i.output.fileName))
+  );
 
-  if (filesToZip.length === 0 && fs.existsSync(OUTPUTS_DIR)) {
-    filesToZip = fs.readdirSync(OUTPUTS_DIR).filter((name) => name !== '.gitkeep');
+  const entries = [];
+  let zipName = `UltraSuperConvertor_Batch_${Date.now()}.zip`;
+  if (completed.length > 0) {
+    const sourceZips = new Set(completed.map((i) => i.sourceZip || ''));
+    const singleZipOnly = sourceZips.size === 1 && !sourceZips.has('');
+    const usedNames = new Set();
+
+    for (const item of completed) {
+      const parsed = path.parse(item.output.fileName);
+      let niceBase = parsed.name;
+      const idTag = `_${item.id.slice(0, 4)}`;
+      if (item.sourceZip && niceBase.endsWith(idTag)) niceBase = niceBase.slice(0, -idTag.length);
+
+      const segments = [];
+      if (item.sourceZip) {
+        if (!singleZipOnly) segments.push(path.parse(item.sourceZip).name.replace(/[^a-zA-Z0-9._ -]/g, '_'));
+        if (item.zipRelDir) segments.push(...item.zipRelDir.split('/').filter(Boolean));
+      }
+
+      let entryName = [...segments, `${niceBase}${parsed.ext}`].join('/');
+      let n = 2;
+      while (usedNames.has(entryName.toLowerCase())) {
+        entryName = [...segments, `${niceBase}_${n}${parsed.ext}`].join('/');
+        n += 1;
+      }
+      usedNames.add(entryName.toLowerCase());
+      entries.push({ filePath: path.join(OUTPUTS_DIR, item.output.fileName), name: entryName });
+    }
+
+    zipName = singleZipOnly
+      ? `${path.parse([...sourceZips][0]).name.replace(/[^a-zA-Z0-9._-]/g, '_')}_converted.zip`
+      : `UltraSuperConvertor_Batch_${Date.now()}.zip`;
+  } else if (fs.existsSync(OUTPUTS_DIR)) {
+    fs.readdirSync(OUTPUTS_DIR)
+      .filter((name) => name !== '.gitkeep')
+      .forEach((name) => entries.push({ filePath: path.join(OUTPUTS_DIR, name), name }));
   }
 
-  if (filesToZip.length === 0) {
+  if (entries.length === 0) {
     return res.status(400).send('No completed files available to zip.');
   }
 
-  const zipName = `UltraSuperConvertor_Batch_${Date.now()}.zip`;
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
 
@@ -1181,10 +1381,9 @@ app.get('/api/download-zip', (req, res) => {
   archive.on('error', (err) => res.status(500).end(err.message));
   archive.pipe(res);
 
-  for (const fileName of filesToZip) {
-    const filePath = path.join(OUTPUTS_DIR, fileName);
-    if (fs.existsSync(filePath)) {
-      archive.file(filePath, { name: fileName });
+  for (const entry of entries) {
+    if (fs.existsSync(entry.filePath)) {
+      archive.file(entry.filePath, { name: entry.name });
     }
   }
   archive.finalize();

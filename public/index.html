@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UltraSuperConvertor — Fast Local Image, Video &amp; Audio Converter</title>
-  <link rel="icon" type="image/png" href="/assets/favicon.png?v=11" />
-  <link rel="stylesheet" href="/styles.css?v=11" />
+  <link rel="icon" type="image/png" href="/assets/favicon.png?v=13" />
+  <link rel="stylesheet" href="/styles.css?v=14" />
 </head>
 <body>
   <!-- Semi-Dark Ambient Backdrop with Subtle Moving Waves -->
@@ -32,12 +32,12 @@
   <header class="topbar">
     <div class="brand-lockup">
       <div class="brand-logo-wrap">
-        <img src="/assets/logo-opt.png?v=2" alt="UltraSuperConvertor" class="brand-logo" width="42" height="42" />
+        <img src="/assets/logo-opt.png?v=12" alt="UltraSuperConvertor" class="brand-logo" width="40" height="40" />
       </div>
       <div class="brand-titles">
         <div class="brand-name-row">
           <h1 class="brand-title">
-            <img src="/assets/wordmark.webp?v=2" alt="UltraSuperConvertor" class="brand-wordmark" height="24" />
+            <img src="/assets/wordmark.png?v=12" alt="UltraSuperConvertor" class="brand-wordmark" height="23" />
           </h1>
         </div>
         <p class="brand-subtitle">Fast Local Image, HEIC, Video &amp; Audio Converter</p>
@@ -65,22 +65,22 @@
 
     <!-- Header Action Controls -->
     <div class="topbar-actions">
-      <button type="button" class="btn-tech btn-outline" id="btnCheckUpdates" title="Check GitHub for updates">
-        <span>Check Updates</span>
-      </button>
-
-      <a href="/setup" class="btn-tech btn-outline" id="btnSetupWizard" title="Open Setup &amp; Desktop Shortcut Wizard" style="text-decoration:none;">
-        <span>Setup Wizard</span>
-      </a>
-
       <button type="button" class="btn-tech btn-outline" id="btnOpenFolder" title="View saved output files">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Saved Files</span>
       </button>
 
+      <a href="/setup" class="btn-tech btn-outline" id="btnSetupWizard" title="Open Setup &amp; Desktop Shortcut Wizard" style="text-decoration:none;">
+        <span>Setup</span>
+      </a>
+
+      <button type="button" class="btn-tech btn-outline" id="btnCheckUpdates" title="Check GitHub for updates">
+        <span>Updates</span>
+      </button>
+
       <button type="button" class="btn-tech btn-danger-power" id="btnStopInstance" title="Quit UltraSuperConvertor">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10m6.36-5.36a9 9 0 11-12.73 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <span>Quit App</span>
+        <span>Quit</span>
       </button>
     </div>
   </header>
@@ -103,92 +103,92 @@
           <div class="preset-grid" role="radiogroup" aria-label="Optimization Presets">
             <button type="button" class="preset-card active" data-preset="web-ultra" role="radio" aria-checked="true">
               <div class="preset-card-top">
-                <span class="preset-icon">⚡</span>
+                <img src="/assets/icons/preset-web.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">Recommended</span>
               </div>
               <div class="preset-name">Optimize for Web</div>
-              <div class="preset-desc">Fast WebP images &amp; MP4 video, 80% quality, up to 1080p</div>
+              <div class="preset-desc">Fast WebP &amp; MP4, 80% quality</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="heic-jpg" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">📸</span>
-                <span class="preset-tag">iPhone / Photo</span>
+                <img src="/assets/icons/preset-heic.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
+                <span class="preset-tag">iPhone Photo</span>
               </div>
-              <div class="preset-name">HEIC / Photo to JPG</div>
-              <div class="preset-desc">Converts HEIC &amp; photos to universal high-quality JPG</div>
+              <div class="preset-name">HEIC to JPG</div>
+              <div class="preset-desc">Convert iPhone &amp; camera photos to JPG</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="social-hd" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">📱</span>
+                <img src="/assets/icons/preset-social.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">1080p HD</span>
               </div>
               <div class="preset-name">Social &amp; Creators</div>
-              <div class="preset-desc">Crisp 1080p HD quality for Instagram, TikTok &amp; YouTube</div>
+              <div class="preset-desc">Crisp HD for Instagram, TikTok &amp; YouTube</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="discord-chat" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">💬</span>
+                <img src="/assets/icons/preset-chat.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">Under 8 MB</span>
               </div>
-              <div class="preset-name">Discord &amp; Chat Fit</div>
-              <div class="preset-desc">Automatically fits videos &amp; images under chat upload limits</div>
+              <div class="preset-name">Discord &amp; Chat</div>
+              <div class="preset-desc">Auto-fits under chat upload limits</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="email-light" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">✉️</span>
+                <img src="/assets/icons/preset-email.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">Small Size</span>
               </div>
               <div class="preset-name">Email &amp; Fast Share</div>
-              <div class="preset-desc">Compact 720p / 1280px files for quick attachments</div>
+              <div class="preset-desc">Compact 720p / 1280px attachments</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="ecommerce" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">🛍️</span>
+                <img src="/assets/icons/preset-ecommerce.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">1:1 Square</span>
               </div>
               <div class="preset-name">Product Square</div>
-              <div class="preset-desc">Clean 1600×1600 square frame with gentle sharpening</div>
+              <div class="preset-desc">Clean 1600×1600 square crop</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="nextgen-avif" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">✨</span>
+                <img src="/assets/icons/preset-compress.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">Smallest</span>
               </div>
               <div class="preset-name">Max Compression</div>
-              <div class="preset-desc">Ultra-small AVIF images &amp; WebM video for maximum savings</div>
+              <div class="preset-desc">Ultra-small AVIF &amp; WebM files</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="archival-master" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">💎</span>
+                <img src="/assets/icons/preset-lossless.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">Best Quality</span>
               </div>
               <div class="preset-name">Lossless / Original</div>
-              <div class="preset-desc">Keeps original resolution, metadata &amp; maximum quality</div>
+              <div class="preset-desc">Original size &amp; maximum quality</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="video-gif" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">🎞️</span>
+                <img src="/assets/icons/preset-gif.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
                 <span class="preset-tag">Animated</span>
               </div>
               <div class="preset-name">Video to GIF</div>
-              <div class="preset-desc">Turns any video clip into a smooth looping animated GIF</div>
+              <div class="preset-desc">Smooth looping animated GIF</div>
             </button>
 
             <button type="button" class="preset-card" data-preset="audio-extract" role="radio" aria-checked="false">
               <div class="preset-card-top">
-                <span class="preset-icon">🎧</span>
-                <span class="preset-tag">Audio MP3</span>
+                <img src="/assets/icons/preset-audio.png?v=13" alt="" class="preset-icon-img" width="28" height="28" />
+                <span class="preset-tag">MP3 Audio</span>
               </div>
-              <div class="preset-name">Extract Audio (MP3)</div>
-              <div class="preset-desc">Saves the audio track from any video or audio file as MP3</div>
+              <div class="preset-name">Extract Audio</div>
+              <div class="preset-desc">Save audio track from video as MP3</div>
             </button>
           </div>
         </div>
@@ -198,7 +198,9 @@
       <section class="studio-col panel-card col-engine is-collapsed" id="engineAccordionCard" aria-label="Advanced Format and Compression Settings">
         <div class="panel-header engine-toggle-header" id="btnToggleEngineCard" role="button" tabindex="0" aria-expanded="false" aria-controls="engineCollapseBody">
           <div class="panel-title-group">
-            <span class="step-index">⚙</span>
+            <span class="step-index step-index-gear" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            </span>
             <div>
               <h2>Advanced Settings</h2>
               <span class="engine-summary-sub" id="engineSummaryText">WebP / MP4 &bull; 80% Quality &bull; Max 1920px</span>
@@ -479,17 +481,20 @@
     <section class="processing-stage studio-col col-stage" aria-label="Drop Files and Convert">
       <!-- Clean Modern Dropzone -->
       <div class="dropzone-card" id="dropzone" tabindex="0" role="button" aria-label="Upload or Drag and Drop Image, HEIC, Video, or Audio Files">
-        <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.heic,.heif,.avif,.webp,.tiff,.tif,.ico,.bmp,.mkv,.flv,.mov,.avi,.wmv,.flac,.ogg,.opus" hidden />
+        <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.heic,.heif,.avif,.webp,.tiff,.tif,.ico,.bmp,.mkv,.flv,.mov,.avi,.wmv,.flac,.ogg,.opus,.zip,application/zip" hidden />
 
         <div class="dropzone-modern-content">
           <div class="dropzone-icon-badge" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="28" height="28"><path d="M12 16V4m0 0L8 8m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="dropzone-copy">
-            <h2 class="dropzone-headline">Drop images, HEIC photos, videos, or audio here</h2>
-            <p class="dropzone-subtext">
-              Supports <strong>HEIC, JPG, PNG, WebP, AVIF, GIF, SVG, TIFF, ICO</strong> &amp; <strong>MP4, MOV, WebM, MKV, MP3, WAV, FLAC</strong>
-            </p>
+            <h2 class="dropzone-headline">Drop photos, videos, audio, or a ZIP here</h2>
+            <div class="format-pill-row">
+              <span class="format-pill">HEIC / JPG / PNG / WebP</span>
+              <span class="format-pill">MP4 / MOV / WebM / GIF</span>
+              <span class="format-pill">MP3 / WAV / FLAC</span>
+              <span class="format-pill format-pill-zip">ZIP batches</span>
+            </div>
           </div>
           <div class="dropzone-buttons">
             <button type="button" class="btn-tech btn-primary" id="btnBrowseFiles">
@@ -497,7 +502,7 @@
               <span>Select Files</span>
             </button>
             <button type="button" class="btn-tech btn-secondary" id="btnLoadDemo">
-              <span>Load Sample Files</span>
+              <span>Try Sample Files</span>
             </button>
           </div>
         </div>
@@ -513,17 +518,23 @@
 
         <div class="batch-command-right">
           <button type="button" class="btn-tech btn-ghost" id="btnClearQueue" disabled>
-            <span>Clear List</span>
+            <span>Clear</span>
           </button>
           <button type="button" class="btn-tech btn-outline" id="btnDownloadZip" disabled>
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Download All (.ZIP)</span>
+            <span>Download ZIP</span>
           </button>
           <button type="button" class="btn-tech btn-launch" id="btnProcessAll" disabled>
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
-            <span id="btnProcessLabel">Convert All Files</span>
+            <span id="btnProcessLabel">Convert All</span>
           </button>
         </div>
+      </div>
+
+      <!-- Upload / ZIP Summary Notice -->
+      <div class="upload-notice" id="uploadNotice" role="status" aria-live="polite" hidden>
+        <div class="upload-notice-body"></div>
+        <button type="button" class="upload-notice-close" aria-label="Dismiss">&times;</button>
       </div>
 
       <!-- Overall Batch Progress Bar -->
@@ -538,9 +549,11 @@
       <!-- Queue Cards List -->
       <div class="queue-list scroller" id="queueList" role="region" aria-label="Queued Media Files">
         <div class="empty-queue-card" id="emptyQueueState">
-          <div class="empty-modern-illustration" aria-hidden="true">✨</div>
+          <div class="empty-modern-illustration" aria-hidden="true">
+            <img src="/assets/icons/empty-queue.png?v=13" alt="" width="64" height="64" />
+          </div>
           <h3>Ready when you are</h3>
-          <p>Drop your photos, HEIC images, videos, or audio files above — or click <strong>"Load Sample Files"</strong> to try a quick demo.</p>
+          <p>Drop your files above, or click <strong>"Try Sample Files"</strong> to test a quick conversion.</p>
         </div>
       </div>
     </section>
@@ -597,7 +610,7 @@
 
         <div class="video-transport-bar">
           <button type="button" class="btn-tech btn-primary" id="btnSyncPlayPause">
-            <span id="syncPlayLabel">▶ Play Both</span>
+            <span id="syncPlayLabel">Play Both</span>
           </button>
           <span class="mono-badge" id="syncTimecode">00:00.0 / 00:00.0</span>
           <input type="range" id="syncScrubber" min="0" max="100" step="0.01" value="0" class="tech-range sync-scrub-range" aria-label="Video timeline scrubber" />
@@ -605,7 +618,7 @@
             <span>1.0× Speed</span>
           </button>
           <button type="button" class="btn-tech btn-outline" id="btnSyncMute">
-            <span>🔊 Audio On</span>
+            <span>Audio On</span>
           </button>
         </div>
       </div>
@@ -658,7 +671,10 @@
         </div>
 
         <div class="studio-hint-bar">
-          <span>💡 Drag inside the box to move the crop area, drag corners to resize, or drag the watermark text anywhere on the image.</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brand-color)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Drag inside the box to move the crop area, drag corners to resize, or drag the watermark text anywhere on the image.
+          </span>
         </div>
       </div>
 
@@ -917,13 +933,13 @@
   <!-- Offline Overlay when App is Closed -->
   <div id="offlineOverlay" class="offline-overlay" hidden>
     <div class="offline-card">
-      <img src="/assets/logo-opt.png?v=2" alt="UltraSuperConvertor" width="68" height="68" class="offline-logo" />
-      <img src="/assets/wordmark.webp?v=2" alt="UltraSuperConvertor" class="offline-wordmark" height="24" />
+      <img src="/assets/logo-opt.png?v=12" alt="UltraSuperConvertor" width="64" height="64" class="offline-logo" />
+      <img src="/assets/wordmark.png?v=12" alt="UltraSuperConvertor" class="offline-wordmark" height="24" />
       <h2>App Closed</h2>
       <p>UltraSuperConvertor has been shut down cleanly. You can close this browser tab, or launch the app again anytime from your Desktop icon.</p>
     </div>
   </div>
 
-  <script src="/app.js?v=11"></script>
+  <script src="/app.js?v=14"></script>
 </body>
 </html>

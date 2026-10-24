@@ -609,11 +609,15 @@
 
   async function uploadFiles(fileList) {
     const formData = new FormData();
+    let zipCount = 0;
     for (const f of fileList) {
       formData.append('files', f);
+      if (/\.zip$/i.test(f.name)) zipCount += 1;
     }
     btnBrowseFiles.disabled = true;
-    btnBrowseFiles.querySelector('span').textContent = `Adding ${fileList.length} file(s)...`;
+    btnBrowseFiles.querySelector('span').textContent = zipCount > 0
+      ? `Unpacking ${zipCount} ZIP${zipCount === 1 ? '' : 's'}...`
+      : `Adding ${fileList.length} file(s)...`;
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -624,13 +628,61 @@
         data.items.forEach((item) => upsertQueueItem(item));
         updateGlobalStats();
       }
+      showUploadNotice(data);
     } catch (err) {
       console.error('Upload failed:', err);
+      showUploadNotice({ errors: [`Upload failed: ${err.message}`] });
     } finally {
       btnBrowseFiles.disabled = false;
       btnBrowseFiles.querySelector('span').textContent = 'Select Files';
     }
   }
+
+  // Summarize ZIP results and any skipped files so nothing silently disappears
+  const uploadNotice = document.getElementById('uploadNotice');
+  function showUploadNotice(data = {}) {
+    if (!uploadNotice) return;
+    const items = data.items || [];
+    const skipped = data.skipped || [];
+    const errors = data.errors || [];
+    const fromZip = items.filter((i) => i.sourceZip);
+
+    if (fromZip.length === 0 && skipped.length === 0 && errors.length === 0) {
+      uploadNotice.hidden = true;
+      return;
+    }
+
+    const counts = { image: 0, video: 0, audio: 0 };
+    fromZip.forEach((i) => { if (counts[i.mediaType] !== undefined) counts[i.mediaType] += 1; });
+    const parts = [];
+    if (counts.image) parts.push(`${counts.image} image${counts.image === 1 ? '' : 's'}`);
+    if (counts.video) parts.push(`${counts.video} video${counts.video === 1 ? '' : 's'}`);
+    if (counts.audio) parts.push(`${counts.audio} audio file${counts.audio === 1 ? '' : 's'}`);
+
+    let html = '';
+    if (fromZip.length > 0) {
+      const zipNames = [...new Set(fromZip.map((i) => i.sourceZip))].map(escapeHtml).join(', ');
+      html += `<strong>Unpacked ${zipNames}:</strong> ${parts.join(', ')} added. Each type uses its preset format.`;
+    }
+    if (errors.length > 0) {
+      html += `<div class="upload-notice-error">${errors.map(escapeHtml).join('<br>')}</div>`;
+    }
+    if (skipped.length > 0) {
+      const list = skipped
+        .slice(0, 8)
+        .map((s) => `<li><span>${escapeHtml(s.name)}</span> <em>${escapeHtml(s.reason)}</em></li>`)
+        .join('');
+      const more = skipped.length > 8 ? `<li><em>+${skipped.length - 8} more</em></li>` : '';
+      html += `<details class="upload-notice-skipped"><summary>${skipped.length} file${skipped.length === 1 ? '' : 's'} skipped</summary><ul>${list}${more}</ul></details>`;
+    }
+
+    uploadNotice.querySelector('.upload-notice-body').innerHTML = html;
+    uploadNotice.classList.toggle('has-error', errors.length > 0 && fromZip.length === 0);
+    uploadNotice.hidden = false;
+  }
+  uploadNotice?.querySelector('.upload-notice-close')?.addEventListener('click', () => {
+    uploadNotice.hidden = true;
+  });
 
   // ---- Load Built-In Sample Files ----
   btnLoadDemo.addEventListener('click', async (e) => {
@@ -670,21 +722,21 @@
     card.className = `queue-item-card status-${item.status}`;
 
     const dimInfo = item.width && item.height ? `${item.width}×${item.height}` : (item.duration ? `${item.duration.toFixed(1)}s` : 'Audio');
-    const thumbSrc = item.thumbUrl || '/assets/logo-opt.png?v=3';
+    const thumbSrc = item.thumbUrl || '/assets/logo-opt.png?v=13';
 
     // Studio Config Badges (Crop / Watermark / Trim)
     let studioBadges = '';
     const sc = item.studioConfig || {};
     if (sc.cropRect && (sc.cropRect.w < 0.99 || sc.cropRect.h < 0.99)) {
-      studioBadges += `<span class="meta-chip chip-studio">✂ Cropped (${Math.round(sc.cropRect.w * 100)}×${Math.round(sc.cropRect.h * 100)}%)</span>`;
+      studioBadges += `<span class="meta-chip chip-studio">Cropped (${Math.round(sc.cropRect.w * 100)}×${Math.round(sc.cropRect.h * 100)}%)</span>`;
     }
     if (sc.watermarkText && sc.watermarkText.trim()) {
-      studioBadges += `<span class="meta-chip chip-studio">🏷️ Watermark: "${sc.watermarkText.trim().slice(0, 12)}"</span>`;
+      studioBadges += `<span class="meta-chip chip-studio">Watermark: "${sc.watermarkText.trim().slice(0, 12)}"</span>`;
     }
     if (sc.trimStart !== undefined || sc.trimEnd !== undefined) {
       const ts = sc.trimStart || 0;
       const te = sc.trimEnd || item.duration || 0;
-      studioBadges += `<span class="meta-chip chip-studio">⏱ Trim: ${Number(ts).toFixed(1)}s → ${Number(te).toFixed(1)}s</span>`;
+      studioBadges += `<span class="meta-chip chip-studio">Trim: ${Number(ts).toFixed(1)}s → ${Number(te).toFixed(1)}s</span>`;
     }
 
     let outputHtml = '';
@@ -731,6 +783,7 @@
           <span class="meta-chip">${item.mediaType.charAt(0).toUpperCase() + item.mediaType.slice(1)}</span>
           <span class="meta-chip">${formatBytes(item.originalSize)}</span>
           <span class="meta-chip">${dimInfo}</span>
+          ${item.sourceZip ? `<span class="meta-chip chip-zip" title="${escapeHtml(item.zipRelDir ? `${item.sourceZip} / ${item.zipRelDir}` : item.sourceZip)}">From ${escapeHtml(item.sourceZip)}</span>` : ''}
           ${studioBadges}
           ${outputHtml}
         </div>
@@ -743,12 +796,14 @@
       <div class="item-actions">
         ${item.mediaType === 'image' ? `
           <button type="button" class="btn-tech btn-outline btn-studio-crop" data-id="${item.id}" title="Crop image or add watermark">
-            <span>✂ Crop</span>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2v14a2 2 0 002 2h14M18 22V8a2 2 0 00-2-2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Crop</span>
           </button>
         ` : ''}
         ${item.mediaType === 'video' ? `
           <button type="button" class="btn-tech btn-outline btn-studio-trim" data-id="${item.id}" title="Trim video start and end times">
-            <span>✂ Trim</span>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>Trim</span>
           </button>
         ` : ''}
         ${showCompareBtn ? `
@@ -853,7 +908,7 @@
     } finally {
       updateGlobalStats();
       btnProcessAll.disabled = itemsMap.size === 0;
-      btnProcessLabel.textContent = 'Convert All Files';
+      btnProcessLabel.textContent = 'Convert All';
     }
   }
 
@@ -928,7 +983,7 @@
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
                 <a href="${f.url}" download="${escapeHtml(f.name)}" class="btn-tech btn-emerald btn-xs" style="text-decoration:none;">
-                  <span>⬇ Download</span>
+                  <span>Download</span>
                 </a>
                 <button type="button" class="btn-tech btn-outline btn-xs btn-del-output" data-filename="${escapeHtml(f.name)}">
                   <span>✕</span>
@@ -979,9 +1034,9 @@
       await navigator.clipboard.writeText(pathStr);
       const sp = btnCopyOutputPath.querySelector('span');
       if (sp) {
-        sp.textContent = '✓ Path Copied!';
+        sp.textContent = 'Path Copied!';
         setTimeout(() => {
-          sp.textContent = '📋 Copy Folder Path';
+          sp.textContent = 'Copy Folder Path';
         }, 1800);
       }
     } catch (_) {}
@@ -991,9 +1046,9 @@
     const sp = btnTriggerWindowsExplorer.querySelector('span');
     if (sp) sp.textContent = 'Opening Explorer...';
     await fetch('/api/open-folder', { method: 'POST' }).catch(() => {});
-    if (sp) sp.textContent = '✓ Opened in Explorer';
+    if (sp) sp.textContent = 'Opened in Explorer';
     setTimeout(() => {
-      if (sp) sp.textContent = '📂 Open in Explorer';
+      if (sp) sp.textContent = 'Open in Explorer';
     }, 1800);
   });
 
@@ -1052,7 +1107,7 @@
 
       const btnSpan = btnCheckUpdates?.querySelector('span');
       if (data.updateAvailable) {
-        if (btnSpan) btnSpan.textContent = '⚡ Update Available';
+        if (btnSpan) btnSpan.textContent = 'Update Available';
         if (btnCheckUpdates) btnCheckUpdates.style.borderColor = '#2563eb';
         if (updateStatusBadge) {
           updateStatusBadge.textContent = 'Update Available';
@@ -1062,7 +1117,7 @@
           updateStatusBanner.style.background = '#ecfdf5';
           updateStatusBanner.style.borderColor = '#10b981';
           updateStatusBanner.innerHTML = `
-            <strong style="color:#065f46;display:block;margin-bottom:4px;">⚡ A newer version is available on GitHub!</strong>
+            <strong style="color:#065f46;display:block;margin-bottom:4px;">A newer version is available on GitHub!</strong>
             <div style="font-size:0.8rem;color:#1e293b;">
               Latest Commit: <code>${escapeHtml(data.remoteSha || 'main')}</code> — ${escapeHtml(data.latestMessage || 'New update available')}
             </div>
@@ -1070,19 +1125,19 @@
         }
         if (btnApplyUpdateNow) {
           const sp = btnApplyUpdateNow.querySelector('span');
-          if (sp) sp.textContent = '🚀 Update & Restart Now';
+          if (sp) sp.textContent = 'Update & Restart Now';
         }
       } else {
-        if (btnSpan) btnSpan.textContent = '↻ Updates';
+        if (btnSpan) btnSpan.textContent = 'Updates';
         if (updateStatusBadge) {
-          updateStatusBadge.textContent = '✓ Up to Date';
+          updateStatusBadge.textContent = 'Up to Date';
           updateStatusBadge.style.color = '#10b981';
         }
         if (updateStatusBanner) {
           updateStatusBanner.style.background = '#f8fafc';
           updateStatusBanner.style.borderColor = 'rgba(9,13,22,0.14)';
           updateStatusBanner.innerHTML = `
-            <strong style="color:#059669;display:block;margin-bottom:4px;">✓ UltraSuperConvertor is up to date!</strong>
+            <strong style="color:#059669;display:block;margin-bottom:4px;">UltraSuperConvertor is up to date!</strong>
             <div style="font-size:0.8rem;color:#475569;">
               Running latest version <code>${escapeHtml(localLabel)}</code>${data.latestMessage ? ` — <em>"${escapeHtml(data.latestMessage)}"</em>` : ''}
             </div>
@@ -1090,7 +1145,7 @@
         }
         if (btnApplyUpdateNow) {
           const sp = btnApplyUpdateNow.querySelector('span');
-          if (sp) sp.textContent = '⚡ Re-Sync Latest';
+          if (sp) sp.textContent = 'Re-Sync Latest';
         }
       }
     } catch (err) {
@@ -1129,7 +1184,7 @@
       if (updateTerminalLog) {
         updateTerminalLog.textContent += `${data.log || 'Updated!'}\n[Updater] Waiting for server restart...`;
       }
-      if (sp) sp.textContent = '✓ Updated! Reloading...';
+      if (sp) sp.textContent = 'Updated! Reloading...';
 
       setTimeout(() => {
         window.location.reload();
@@ -1196,8 +1251,8 @@
       compareBeforeVideo.playbackRate = 1.0;
       compareAfterVideo.playbackRate = 1.0;
       btnSyncSpeed.querySelector('span').textContent = '1.0× Speed';
-      btnSyncMute.querySelector('span').textContent = '🔊 Audio On';
-      syncPlayLabel.textContent = '▶ Play Both';
+      btnSyncMute.querySelector('span').textContent = 'Audio On';
+      syncPlayLabel.textContent = 'Play Both';
 
       setVideoCompareMode('side');
     } else {
@@ -1245,11 +1300,11 @@
     if (compareAfterVideo.paused) {
       compareBeforeVideo.currentTime = compareAfterVideo.currentTime;
       await Promise.allSettled([compareBeforeVideo.play(), compareAfterVideo.play()]);
-      syncPlayLabel.textContent = '⏸ Pause Both';
+      syncPlayLabel.textContent = 'Pause Both';
     } else {
       compareBeforeVideo.pause();
       compareAfterVideo.pause();
-      syncPlayLabel.textContent = '▶ Play Both';
+      syncPlayLabel.textContent = 'Play Both';
     }
   });
 
@@ -1280,7 +1335,7 @@
 
   btnSyncMute?.addEventListener('click', () => {
     compareAfterVideo.muted = !compareAfterVideo.muted;
-    btnSyncMute.querySelector('span').textContent = compareAfterVideo.muted ? '🔇 Muted' : '🔊 Audio On';
+    btnSyncMute.querySelector('span').textContent = compareAfterVideo.muted ? 'Muted' : 'Audio On';
   });
 
   function updateSplitPosition(pct) {
