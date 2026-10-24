@@ -551,7 +551,20 @@ body {
 }
 
 .sidebar-col .col-presets {
-  flex: 1;
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-col:has(.col-engine:not(.is-collapsed)) .col-presets {
+  flex: 0.82 1 0%;
+  min-height: 170px;
+}
+
+.sidebar-col .col-engine {
+  display: flex;
+  flex-direction: column;
   min-height: 0;
 }
 
@@ -561,20 +574,21 @@ body {
 }
 
 .sidebar-col .col-engine:not(.is-collapsed) {
-  flex: 1.15;
+  flex: 1.68 1 0%;
   min-height: 0;
 }
 
 .col-scroll-body {
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Custom Scrollbars */
 .scroller {
-  --scrollbar-thumb: #cbd5e1;
-  --scrollbar-track: transparent;
+  --scrollbar-thumb: #94a3b8;
+  --scrollbar-track: #f1f5f9;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
@@ -836,7 +850,7 @@ body {
    ========================================================================== */
 
 .settings-form {
-  padding: 14px;
+  padding: 14px 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
