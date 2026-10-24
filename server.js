@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const sharp = require('sharp');
+const heicConvert = require('heic-convert');
 const ffmpegPath = require('ffmpeg-static');
 const ffprobePath = require('ffprobe-static').path;
 const archiver = require('archiver');
@@ -72,7 +73,7 @@ function broadcastEvent(type, payload) {
 }
 
 // Classify file category
-const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif', '.tiff', '.tif', '.svg', '.ico', '.bmp', '.jfif', '.heic']);
+const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif', '.tiff', '.tif', '.svg', '.ico', '.bmp', '.jfif', '.heic', '.heif']);
 const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mov', '.mkv', '.avi', '.flv', '.wmv', '.m4v', '.mpeg', '.mpg', '.3gp', '.ogv', '.ts']);
 const AUDIO_EXTS = new Set(['.mp3', '.wav', '.flac', '.aac', '.m4a', '.ogg', '.opus', '.wma']);
 
@@ -202,17 +203,34 @@ async function inspectAndRegisterFile(fileObj) {
 
   if (mediaType === 'image') {
     try {
-      const meta = await sharp(fileObj.path, { animated: true }).metadata();
+      let sourceForSharp = fileObj.path;
+
+      // Decode Apple HEIC / HEIF files via heic-convert so Sharp and Browser Previews work natively on Windows
+      if (ext === '.heic' || ext === '.heif') {
+        const inputBuffer = fs.readFileSync(fileObj.path);
+        const decodedBuffer = await heicConvert({
+          buffer: inputBuffer,
+          format: 'PNG'
+        });
+        const decodedName = `heic_decoded_${id}.png`;
+        const decodedPath = path.join(THUMBS_DIR, decodedName);
+        fs.writeFileSync(decodedPath, Buffer.from(decodedBuffer));
+        sourceForSharp = decodedPath;
+        item.decodedInputPath = decodedPath;
+        item.inputUrl = `/uploads/thumbs/${decodedName}`;
+      }
+
+      const meta = await sharp(sourceForSharp, { animated: true }).metadata();
       item.width = meta.width || null;
       item.height = meta.height || null;
       item.colorSpace = meta.space || null;
       item.hasAlpha = !!meta.hasAlpha;
-      item.codec = (meta.format || item.originalFormat).toUpperCase();
+      item.codec = (ext === '.heic' || ext === '.heif') ? 'HEIC' : (meta.format || item.originalFormat).toUpperCase();
 
       // Create lightweight web thumbnail
       const thumbName = `thumb_${id}.webp`;
       const thumbPath = path.join(THUMBS_DIR, thumbName);
-      await sharp(fileObj.path, { animated: false })
+      await sharp(sourceForSharp, { animated: false })
         .rotate()
         .resize(480, 480, { fit: 'inside', withoutEnlargement: true })
         .webp({ quality: 80 })
@@ -354,14 +372,15 @@ async function processImageItem(item, baseSettings) {
   const stripMetadata = settings.stripMetadata !== false;
   const progressive = settings.progressive !== false;
 
-  const srcMeta = await sharp(item.inputPath).metadata();
+  const sourceImagePath = item.decodedInputPath || item.inputPath;
+  const srcMeta = await sharp(sourceImagePath).metadata();
   const srcW = srcMeta.width || item.width || 800;
   const srcH = srcMeta.height || item.height || 600;
 
   // Build base Sharp pipeline function so we can re-run if targetSizeKB binary search is active
   const buildPipeline = async (scaleFactor = 1.0) => {
     const isAnimated = outFormat === 'gif' || (outFormat === 'webp' && item.originalFormat === 'GIF');
-    let pipe = sharp(item.inputPath, { animated: isAnimated });
+    let pipe = sharp(sourceImagePath, { animated: isAnimated });
 
     let activeW = srcW;
     let activeH = srcH;
@@ -525,6 +544,8 @@ async function processImageItem(item, baseSettings) {
       return pipe.webp({ quality: q, lossless, effort: 4 }).toBuffer({ resolveWithObject: true });
     } else if (outFormat === 'avif') {
       return pipe.avif({ quality: q, lossless, effort: 4 }).toBuffer({ resolveWithObject: true });
+    } else if (outFormat === 'heic' || outFormat === 'heif') {
+      return pipe.heif({ quality: q, lossless, compression: 'av1', effort: 4 }).toBuffer({ resolveWithObject: true });
     } else if (outFormat === 'jpg') {
       return pipe.jpeg({ quality: q, progressive, mozjpeg: true }).toBuffer({ resolveWithObject: true });
     } else if (outFormat === 'png') {

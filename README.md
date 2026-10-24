@@ -2,9 +2,9 @@
   <img src="public/assets/logo-opt.png" alt="UltraSuperConvertor Logo" width="96" height="96" />
   <br />
   <img src="public/assets/wordmark.png" alt="ULTRA SUPER CONVERTOR" height="44" />
-  <p><strong>Quantum Local Media Compressor, Converter, Resizer &amp; Studio Engine</strong></p>
+  <p><strong>Fast, Modern Local Media Converter &amp; Compressor</strong></p>
   <p>
-    <code>Sharp (libvips)</code> &bull; <code>FFmpeg 6.1 Static</code> &bull; <code>Zero Cloud Uploads</code> &bull; <code>HTML Setup Wizard</code> &bull; <code>3-Column Studio UI</code>
+    <code>Sharp (libvips)</code> &bull; <code>HEIC / HEIF Support</code> &bull; <code>FFmpeg 6.1 Static</code> &bull; <code>100% Local &amp; Private</code> &bull; <code>HTML Setup Wizard</code>
   </p>
 </div>
 
@@ -12,9 +12,9 @@
 
 ## Overview
 
-**UltraSuperConvertor** is a self-contained, local browser-based media compression, format conversion, resizing, and studio editing suite for **Images, Videos, and Audio**.
+**UltraSuperConvertor** is a self-contained, local browser-based media compression, format conversion, resizing, and editing app for **Images (including Apple `.heic` / `.heif`), Videos, and Audio**.
 
-Every operation executes **100% locally on your machine** using **Sharp (`libvips` 8.15)** for ultra-fast parallel raster/vector processing and **bundled static FFmpeg 6.1 + FFprobe** binaries for hardware-grade video/audio transcoding—with zero external cloud uploads, zero file size limits, and zero subscriptions.
+Every operation executes **100% locally on your machine** using **Sharp (`libvips` 8.15)**, **`heic-convert`**, and **bundled static FFmpeg 6.1 + FFprobe** binaries—with zero external cloud uploads, zero file size limits, and zero subscriptions.
 
 ---
 
@@ -52,15 +52,15 @@ When you are done converting files, you can shut down the background server imme
 
 ---
 
-## 3. 3-Column Studio Interface
+## 3. Clean, Modern Workspace
 
-The workspace is organized into a full-viewport **3-Column Studio Layout** over an animated semi-dark wave backdrop:
+The interface is organized into an intuitive **2-Column Layout** over a subtle animated wave backdrop:
 
-| Column | Module | Responsibilities |
+| Section | Module | Responsibilities |
 | :--- | :--- | :--- |
-| **Left Column** | **`01 // SMART PRESET MATRIX`** | 10 one-click intelligent optimization presets mapped in a compact 2-column grid. Selecting any preset automatically configures all target formats, codecs, bitrates, and dimensions in Step 2. |
-| **Center Column** | **`02 // FORMAT & COMPRESSION ENGINE`** | Tabbed Image / Video & Audio parameter deck with live **Quality / CRF sliders**, **Target File Size (MB) Auto-Bitrate calculator**, **Dimension & Scale Modes**, and collapsible **Advanced Studio Overrides** (Chroma/EXIF/Filters/Watermark/Trim). |
-| **Right Column** | **`03 // BATCH INGESTION & QUEUE`** | Compact drag-and-drop ingestion zone (`LOAD DEMO SUITE` / `BROWSE FILES` / `Ctrl+V` clipboard paste), **Batch Execute / ZIP Download** bar, and an independently scrollable real-time processing queue. |
+| **Left Sidebar (Top)** | **`1. Choose a Preset`** | One-click presets mapped in a clean 2-column grid (including **Optimize for Web**, **HEIC / Photo to JPG**, **Social & Creators**, **Discord & Chat**, **Video to GIF**, and more). |
+| **Left Sidebar (Bottom)** | **`Advanced Settings` *(Collapsed by Default)*** | Collapsible format, quality, CRF, target file size, resize, filter, and audio settings. Collapsed by default to keep the interface clean and uncluttered; click **Customize ▾** anytime to fine-tune. |
+| **Right Stage** | **`2. Your Files` (Dropzone & Queue)** | Drag-and-drop file card (`Select Files` / `Load Sample Files`), **Convert All Files / Download All (ZIP)** bar, and a real-time conversion queue. |
 
 ### Built-In Smart Presets
 - **Optimize for Web** *(Recommended)*: Converts images to high-efficiency `WebP` (Q80, 1920px max width, stripped metadata) and videos to `MP4` (H.264, CRF 25, 1080p, `+faststart` web streaming).
@@ -98,7 +98,7 @@ Each item card in the Batch Queue includes interactive studio buttons:
 
 | Category | Supported Input Formats | Supported Output Formats |
 | :--- | :--- | :--- |
-| **Images** | `PNG`, `JPG/JPEG`, `WebP`, `AVIF`, `GIF`, `TIFF`, `SVG`, `ICO`, `BMP` | `Auto (WebP)`, `WebP`, `AVIF`, `JPG (MozJPEG)`, `PNG`, `TIFF`, `GIF`, `ICO` |
+| **Images** | `HEIC`, `HEIF`, `PNG`, `JPG/JPEG`, `WebP`, `AVIF`, `GIF`, `TIFF`, `SVG`, `ICO`, `BMP` | `Auto (WebP)`, `WebP`, `AVIF`, `JPG (MozJPEG)`, `PNG`, `HEIC / HEIF`, `TIFF`, `GIF`, `ICO` |
 | **Video** | `MP4`, `WebM`, `MOV`, `MKV`, `AVI`, `WMV`, `FLV`, `M4V` | `MP4 (H.264 / H.265)`, `WebM (VP9)`, `MOV`, `MKV`, `AVI`, `Animated GIF`, `Animated WebP` |
 | **Audio** | `MP3`, `WAV`, `FLAC`, `AAC`, `OGG`, `OPUS`, `M4A` *(plus audio extraction from any video)* | `MP3`, `WAV (PCM 16-bit)`, `FLAC`, `AAC (M4A)`, `OGG (Vorbis)`, `OPUS` |
 

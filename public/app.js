@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ULTRASUPERCONVERTOR // QUANTUM MEDIA FRONTEND CONTROLLER
+   ULTRASUPERCONVERTOR // FRONTEND APPLICATION CONTROLLER
    ========================================================================== */
 
 (() => {
@@ -13,7 +13,7 @@
   // ---- Preset Configurations ----
   const PRESETS = {
     'web-ultra': {
-      badge: 'WEB ULTRA',
+      badge: 'Optimize for Web',
       imageFormat: 'webp',
       videoFormat: 'mp4',
       quality: 80,
@@ -31,8 +31,27 @@
       audioMode: 'keep',
       normalizeAudio: false
     },
+    'heic-jpg': {
+      badge: 'HEIC to JPG',
+      imageFormat: 'jpg',
+      videoFormat: 'mp4',
+      quality: 92,
+      crf: 23,
+      resizeMode: 'none',
+      maxDimension: 4096,
+      videoResolution: 'original',
+      stripMetadata: false,
+      progressive: true,
+      lossless: false,
+      sharpen: false,
+      targetSizeKB: '',
+      targetSizeMB: '',
+      fps: 'original',
+      audioMode: 'keep',
+      normalizeAudio: false
+    },
     'social-hd': {
-      badge: 'SOCIAL 1080P',
+      badge: 'Social & Creators',
       imageFormat: 'jpg',
       videoFormat: 'mp4',
       quality: 88,
@@ -51,7 +70,7 @@
       normalizeAudio: true
     },
     'discord-chat': {
-      badge: '< 8MB TARGET',
+      badge: 'Discord & Chat',
       imageFormat: 'webp',
       videoFormat: 'mp4',
       quality: 75,
@@ -70,7 +89,7 @@
       normalizeAudio: false
     },
     'email-light': {
-      badge: 'EMAIL COMPACT',
+      badge: 'Email & Fast Share',
       imageFormat: 'webp',
       videoFormat: 'mp4',
       quality: 70,
@@ -89,7 +108,7 @@
       normalizeAudio: false
     },
     'ecommerce': {
-      badge: '1:1 STUDIO',
+      badge: 'Product Square',
       imageFormat: 'webp',
       videoFormat: 'mp4',
       quality: 90,
@@ -110,7 +129,7 @@
       normalizeAudio: false
     },
     'nextgen-avif': {
-      badge: 'AVIF / WEBM',
+      badge: 'Max Compression',
       imageFormat: 'avif',
       videoFormat: 'webm',
       quality: 76,
@@ -129,7 +148,7 @@
       normalizeAudio: false
     },
     'archival-master': {
-      badge: 'ARCHIVAL PRO',
+      badge: 'Lossless / Original',
       imageFormat: 'png',
       videoFormat: 'mkv',
       quality: 100,
@@ -148,7 +167,7 @@
       normalizeAudio: false
     },
     'video-gif': {
-      badge: 'VIDEO TO GIF',
+      badge: 'Video to GIF',
       imageFormat: 'gif',
       videoFormat: 'gif',
       quality: 80,
@@ -167,7 +186,7 @@
       normalizeAudio: false
     },
     'audio-extract': {
-      badge: 'AUDIO EXTRACT',
+      badge: 'Extract Audio',
       imageFormat: 'webp',
       videoFormat: 'mp3',
       quality: 85,
@@ -186,7 +205,7 @@
       normalizeAudio: true
     },
     'thumbnail-micro': {
-      badge: '480PX MICRO',
+      badge: 'Thumbnail',
       imageFormat: 'webp',
       videoFormat: 'mp4',
       quality: 68,
@@ -319,11 +338,16 @@
   const advancedDrawer = document.getElementById('advancedDrawer');
   const btnResetSettings = document.getElementById('btnResetSettings');
 
+  const engineAccordionCard = document.getElementById('engineAccordionCard');
+  const btnToggleEngineCard = document.getElementById('btnToggleEngineCard');
+  const engineCollapseBody = document.getElementById('engineCollapseBody');
+  const engineExpandLabel = document.getElementById('engineExpandLabel');
+  const engineSummaryText = document.getElementById('engineSummaryText');
+
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('fileInput');
   const btnBrowseFiles = document.getElementById('btnBrowseFiles');
   const btnLoadDemo = document.getElementById('btnLoadDemo');
-  const heroTiltWrap = document.getElementById('heroTiltWrap');
 
   const queueList = document.getElementById('queueList');
   const emptyQueueState = document.getElementById('emptyQueueState');
@@ -365,6 +389,14 @@
   setupDialogLightDismiss(compareDialog);
   setupDialogLightDismiss(shutdownDialog);
 
+  function updateEngineSummaryText() {
+    if (!engineSummaryText) return;
+    const imgFmt = (imageFormatEl?.value || 'webp').toUpperCase();
+    const vidFmt = (videoFormatEl?.value || 'mp4').toUpperCase();
+    const q = qualitySlider?.value || 80;
+    engineSummaryText.textContent = `${imgFmt} • ${vidFmt} • ${q}% Quality`;
+  }
+
   // ---- Apply a Smart Preset ----
   function applyPreset(presetKey) {
     const p = PRESETS[presetKey];
@@ -401,17 +433,18 @@
     chkNormalizeAudio.checked = !!p.normalizeAudio;
 
     syncResizeVisibility();
+    updateEngineSummaryText();
   }
 
   function updateCrfLabel(val) {
     const n = parseInt(val, 10);
     let desc = 'Balanced';
-    if (n <= 18) desc = 'Studio Master';
-    else if (n <= 23) desc = 'High Fidelity';
-    else if (n <= 27) desc = 'Web Optimal';
-    else if (n <= 32) desc = 'Compact Size';
-    else desc = 'Ultra Compressed';
-    crfValue.textContent = `CRF ${n} (${desc})`;
+    if (n <= 18) desc = 'Best Quality';
+    else if (n <= 23) desc = 'High Quality';
+    else if (n <= 27) desc = 'Balanced';
+    else if (n <= 32) desc = 'Smaller File';
+    else desc = 'Max Compression';
+    crfValue.textContent = `${desc} (CRF ${n})`;
   }
 
   function syncResizeVisibility() {
@@ -465,8 +498,12 @@
     btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
   });
 
+  imageFormatEl.addEventListener('change', updateEngineSummaryText);
+  videoFormatEl.addEventListener('change', updateEngineSummaryText);
+
   qualitySlider.addEventListener('input', () => {
     qualityValue.textContent = `${qualitySlider.value}%`;
+    updateEngineSummaryText();
   });
 
   crfSlider.addEventListener('input', () => {
@@ -479,28 +516,44 @@
 
   resizeModeEl.addEventListener('change', syncResizeVisibility);
 
-  btnResetSettings.addEventListener('click', () => applyPreset('web-ultra'));
+  btnResetSettings.addEventListener('click', (e) => {
+    e.stopPropagation();
+    applyPreset('web-ultra');
+  });
 
-  // Collapsible Accordion Toggle
+  // Toggle Collapsible Advanced Settings Card
+  function toggleEngineCard() {
+    if (!btnToggleEngineCard || !engineCollapseBody || !engineAccordionCard) return;
+    const isExpanded = btnToggleEngineCard.getAttribute('aria-expanded') === 'true';
+    const nextState = !isExpanded;
+    btnToggleEngineCard.setAttribute('aria-expanded', String(nextState));
+    engineCollapseBody.hidden = !nextState;
+    engineAccordionCard.classList.toggle('is-collapsed', !nextState);
+    if (engineExpandLabel) {
+      engineExpandLabel.textContent = nextState ? 'Hide ▴' : 'Customize ▾';
+    }
+  }
+
+  btnToggleEngineCard?.addEventListener('click', (e) => {
+    if (e.target.closest('#btnResetSettings')) return;
+    toggleEngineCard();
+  });
+
+  btnToggleEngineCard?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.target.closest('#btnResetSettings')) return;
+      e.preventDefault();
+      toggleEngineCard();
+    }
+  });
+
+  // Collapsible Sub-Accordion Toggle (More Filters & Audio)
   btnToggleAdvanced.addEventListener('click', () => {
     const isExpanded = btnToggleAdvanced.getAttribute('aria-expanded') === 'true';
     const nextState = !isExpanded;
     btnToggleAdvanced.setAttribute('aria-expanded', String(nextState));
     advancedDrawer.classList.toggle('is-expanded', nextState);
   });
-
-  // 3D Perspective Hover Tilt on Hero Visual
-  if (heroTiltWrap) {
-    dropzone.addEventListener('mousemove', (e) => {
-      const rect = heroTiltWrap.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      heroTiltWrap.style.transform = `perspective(700px) rotateY(${(x * 7).toFixed(2)}deg) rotateX(${(-y * 7).toFixed(2)}deg)`;
-    });
-    dropzone.addEventListener('mouseleave', () => {
-      heroTiltWrap.style.transform = 'none';
-    });
-  }
 
   // ---- Upload & Drag-and-Drop ----
   btnBrowseFiles.addEventListener('click', (e) => {
@@ -555,7 +608,7 @@
       formData.append('files', f);
     }
     btnBrowseFiles.disabled = true;
-    btnBrowseFiles.querySelector('span').textContent = `INGESTING ${fileList.length} FILE(S)...`;
+    btnBrowseFiles.querySelector('span').textContent = `Adding ${fileList.length} file(s)...`;
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -570,17 +623,17 @@
       console.error('Upload failed:', err);
     } finally {
       btnBrowseFiles.disabled = false;
-      btnBrowseFiles.querySelector('span').textContent = 'SELECT MEDIA FILES';
+      btnBrowseFiles.querySelector('span').textContent = 'Select Files';
     }
   }
 
-  // ---- Load Built-In Demo Media Suite ----
+  // ---- Load Built-In Sample Files ----
   btnLoadDemo.addEventListener('click', async (e) => {
     e.stopPropagation();
     btnLoadDemo.disabled = true;
     const labelSpan = btnLoadDemo.querySelector('span');
     const origText = labelSpan.textContent;
-    labelSpan.textContent = 'SYNTHESIZING 4K IMAGES & 1080P VIDEO...';
+    labelSpan.textContent = 'Loading sample files...';
     try {
       const res = await fetch('/api/generate-demo', { method: 'POST' });
       const data = await res.json();
@@ -611,22 +664,22 @@
 
     card.className = `queue-item-card status-${item.status}`;
 
-    const dimInfo = item.width && item.height ? `${item.width}×${item.height}` : (item.duration ? `${item.duration.toFixed(1)}s` : 'STREAM');
+    const dimInfo = item.width && item.height ? `${item.width}×${item.height}` : (item.duration ? `${item.duration.toFixed(1)}s` : 'Audio');
     const thumbSrc = item.thumbUrl || '/assets/logo-opt.png?v=3';
 
     // Studio Config Badges (Crop / Watermark / Trim)
     let studioBadges = '';
     const sc = item.studioConfig || {};
     if (sc.cropRect && (sc.cropRect.w < 0.99 || sc.cropRect.h < 0.99)) {
-      studioBadges += `<span class="meta-chip chip-studio">✂ CROPPED (${Math.round(sc.cropRect.w * 100)}×${Math.round(sc.cropRect.h * 100)}%)</span>`;
+      studioBadges += `<span class="meta-chip chip-studio">✂ Cropped (${Math.round(sc.cropRect.w * 100)}×${Math.round(sc.cropRect.h * 100)}%)</span>`;
     }
     if (sc.watermarkText && sc.watermarkText.trim()) {
-      studioBadges += `<span class="meta-chip chip-studio">🏷️ WM: "${sc.watermarkText.trim().slice(0, 12)}"</span>`;
+      studioBadges += `<span class="meta-chip chip-studio">🏷️ Watermark: "${sc.watermarkText.trim().slice(0, 12)}"</span>`;
     }
     if (sc.trimStart !== undefined || sc.trimEnd !== undefined) {
       const ts = sc.trimStart || 0;
       const te = sc.trimEnd || item.duration || 0;
-      studioBadges += `<span class="meta-chip chip-studio">⏱ TRIM: ${Number(ts).toFixed(1)}s → ${Number(te).toFixed(1)}s</span>`;
+      studioBadges += `<span class="meta-chip chip-studio">⏱ Trim: ${Number(ts).toFixed(1)}s → ${Number(te).toFixed(1)}s</span>`;
     }
 
     let outputHtml = '';
@@ -635,8 +688,8 @@
       const outDim = out.width && out.height ? ` • ${out.width}×${out.height}` : '';
       const isSaved = out.savedBytes >= 0;
       const savingsText = isSaved
-        ? `-${out.savedPercent}% (${formatBytes(out.savedBytes)} SAVED)`
-        : `+${Math.abs(out.savedPercent)}% (FORMAT CONVERTED)`;
+        ? `-${out.savedPercent}% (${formatBytes(out.savedBytes)} saved)`
+        : `Converted (${formatBytes(out.size)})`;
 
       outputHtml = `
         <span class="meta-chip chip-output">→ ${out.format} • ${formatBytes(out.size)}${outDim}</span>
@@ -644,12 +697,20 @@
         <span class="meta-chip">${out.elapsedMs}ms</span>
       `;
     } else if (item.status === 'error') {
-      outputHtml = `<span class="meta-chip" style="background:#ffe4e6;color:#be123c;border-color:#fda4af;">ERROR: ${item.error || 'Failed'}</span>`;
+      outputHtml = `<span class="meta-chip" style="background:#ffe4e6;color:#be123c;border-color:#fda4af;">Error: ${item.error || 'Failed'}</span>`;
     }
 
-    const isComparableImage = item.mediaType === 'image' && item.output && !['ICO', 'BMP', 'TIFF'].includes(item.output.format);
+    const isComparableImage = item.mediaType === 'image' && item.output && !['ICO', 'BMP', 'TIFF', 'HEIC', 'HEIF'].includes(item.output.format);
     const isComparableVideo = item.mediaType === 'video' && item.output && ['MP4', 'WEBM', 'MOV', 'GIF', 'WEBP'].includes(item.output.format);
     const showCompareBtn = item.status === 'completed' && (isComparableImage || isComparableVideo);
+
+    const statusLabelMap = {
+      queued: 'Ready',
+      processing: 'Converting...',
+      completed: 'Done',
+      error: 'Error'
+    };
+    const friendlyStatus = statusLabelMap[item.status] || item.status;
 
     card.innerHTML = `
       <div class="item-thumb-box">
@@ -662,7 +723,7 @@
           <h3 class="item-filename" title="${item.originalName}">${item.originalName}</h3>
         </div>
         <div class="item-meta-pills">
-          <span class="meta-chip">${item.mediaType.toUpperCase()}</span>
+          <span class="meta-chip">${item.mediaType.charAt(0).toUpperCase() + item.mediaType.slice(1)}</span>
           <span class="meta-chip">${formatBytes(item.originalSize)}</span>
           <span class="meta-chip">${dimInfo}</span>
           ${studioBadges}
@@ -670,33 +731,33 @@
         </div>
         <div class="item-progress-row">
           <progress max="100" ${item.status === 'processing' && item.progress < 10 ? '' : `value="${item.status === 'completed' ? 100 : item.progress}"`} aria-label="Conversion progress for ${item.originalName}"></progress>
-          <span class="item-progress-label">${item.status.toUpperCase()} ${item.progress ? `${item.progress}%` : ''}</span>
+          <span class="item-progress-label">${friendlyStatus} ${item.progress && item.status === 'processing' ? `${item.progress}%` : ''}</span>
         </div>
       </div>
 
       <div class="item-actions">
         ${item.mediaType === 'image' ? `
-          <button type="button" class="btn-tech btn-outline btn-studio-crop" data-id="${item.id}" title="Interactive Crop, Aspect Ratio & Visual Watermark Positioner">
-            <span>✂ CROP / WM</span>
+          <button type="button" class="btn-tech btn-outline btn-studio-crop" data-id="${item.id}" title="Crop image or add watermark">
+            <span>✂ Crop</span>
           </button>
         ` : ''}
         ${item.mediaType === 'video' ? `
-          <button type="button" class="btn-tech btn-outline btn-studio-trim" data-id="${item.id}" title="Visual Video Timeline Scrubber & Trim Handles">
-            <span>⏱ TIMELINE TRIM</span>
+          <button type="button" class="btn-tech btn-outline btn-studio-trim" data-id="${item.id}" title="Trim video start and end times">
+            <span>✂ Trim</span>
           </button>
         ` : ''}
         ${showCompareBtn ? `
-          <button type="button" class="btn-tech btn-outline btn-compare-item" data-id="${item.id}" title="Inspect Before/After Quality">
-            <span>COMPARE</span>
+          <button type="button" class="btn-tech btn-outline btn-compare-item" data-id="${item.id}" title="Compare Before and After">
+            <span>Compare</span>
           </button>
         ` : ''}
         ${item.status === 'completed' && item.output ? `
           <a href="${item.output.url}" download="${item.output.fileName}" class="btn-tech btn-primary">
-            <span>DOWNLOAD</span>
+            <span>Download</span>
           </a>
         ` : `
           <button type="button" class="btn-tech btn-secondary btn-run-single" data-id="${item.id}" ${item.status === 'processing' ? 'disabled' : ''}>
-            <span>${item.status === 'processing' ? 'RUNNING...' : 'CONVERT'}</span>
+            <span>${item.status === 'processing' ? 'Converting...' : 'Convert'}</span>
           </button>
         `}
         <button type="button" class="btn-tech btn-ghost btn-remove-item" data-id="${item.id}" title="Remove from queue" aria-label="Remove ${item.originalName}">
@@ -762,11 +823,11 @@
   async function processItems(itemIds) {
     const settings = collectSettings();
     btnProcessAll.disabled = true;
-    btnProcessLabel.textContent = `PROCESSING ${itemIds.length} ITEM(S)...`;
+    btnProcessLabel.textContent = `Converting ${itemIds.length} file(s)...`;
     overallProgressWrap.hidden = false;
     overallProgressBar.value = 10;
     overallProgressPct.textContent = '10%';
-    overallProgressText.textContent = `TRANSCODING ${itemIds.length} FILE(S) WITH [${settings.preset.toUpperCase()}]...`;
+    overallProgressText.textContent = `Converting ${itemIds.length} file(s)...`;
 
     try {
       const res = await fetch('/api/process', {
@@ -780,14 +841,14 @@
       }
       overallProgressBar.value = 100;
       overallProgressPct.textContent = '100%';
-      overallProgressText.textContent = 'BATCH PROCESSING COMPLETE // ALL OUTPUTS READY';
+      overallProgressText.textContent = 'All files converted and ready to download!';
     } catch (err) {
       console.error('Batch process error:', err);
-      overallProgressText.textContent = `ERROR: ${err.message}`;
+      overallProgressText.textContent = `Error: ${err.message}`;
     } finally {
       updateGlobalStats();
       btnProcessAll.disabled = itemsMap.size === 0;
-      btnProcessLabel.textContent = 'EXECUTE BATCH CONVERSION';
+      btnProcessLabel.textContent = 'Convert All Files';
     }
   }
 
@@ -827,7 +888,7 @@
       }
       const files = data.files || [];
       if (outputFolderCountText) {
-        outputFolderCountText.textContent = `${files.length} SAVED FILE${files.length === 1 ? '' : 'S'}`;
+        outputFolderCountText.textContent = `${files.length} Saved File${files.length === 1 ? '' : 's'}`;
       }
       if (!outputFilesList) return;
 
@@ -846,23 +907,23 @@
           const isImg = ['PNG', 'JPG', 'JPEG', 'WEBP', 'AVIF', 'GIF', 'SVG', 'ICO', 'BMP'].includes(f.ext);
           const dateStr = new Date(f.modifiedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           return `
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#f8fafc;border:1.5px solid rgba(9,13,22,0.12);border-radius:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
               <div style="display:flex;align-items:center;gap:12px;min-width:0;">
                 ${
                   isImg
-                    ? `<img src="${f.url}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:6px;border:1px solid rgba(9,13,22,0.15);background:#090d16;flex-shrink:0;" />`
-                    : `<div style="width:42px;height:42px;border-radius:6px;background:#090d16;color:#00d2ff;display:grid;place-items:center;font-family:var(--font-mono);font-size:0.7rem;font-weight:800;flex-shrink:0;">${escapeHtml(f.ext || 'FILE')}</div>`
+                    ? `<img src="${f.url}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;background:#0f172a;flex-shrink:0;" />`
+                    : `<div style="width:42px;height:42px;border-radius:8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;display:grid;place-items:center;font-family:var(--font-sans);font-size:0.7rem;font-weight:700;flex-shrink:0;">${escapeHtml(f.ext || 'FILE')}</div>`
                 }
                 <div style="min-width:0;">
-                  <div style="font-weight:700;font-size:0.84rem;color:#090d16;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
-                  <div style="font-family:var(--font-mono);font-size:0.72rem;color:#475569;">
-                    <strong style="color:#0055ff;">${escapeHtml(f.ext)}</strong> &bull; ${formatBytes(f.size)} &bull; Saved at ${dateStr}
+                  <div style="font-weight:700;font-size:0.84rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
+                  <div style="font-family:var(--font-sans);font-size:0.74rem;color:#64748b;">
+                    <strong style="color:#2563eb;">${escapeHtml(f.ext)}</strong> &bull; ${formatBytes(f.size)} &bull; Saved at ${dateStr}
                   </div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
                 <a href="${f.url}" download="${escapeHtml(f.name)}" class="btn-tech btn-emerald btn-xs" style="text-decoration:none;">
-                  <span>⬇ DOWNLOAD</span>
+                  <span>⬇ Download</span>
                 </a>
                 <button type="button" class="btn-tech btn-outline btn-xs btn-del-output" data-filename="${escapeHtml(f.name)}">
                   <span>✕</span>
@@ -913,9 +974,9 @@
       await navigator.clipboard.writeText(pathStr);
       const sp = btnCopyOutputPath.querySelector('span');
       if (sp) {
-        sp.textContent = '✓ PATH COPIED!';
+        sp.textContent = '✓ Path Copied!';
         setTimeout(() => {
-          sp.textContent = '📋 COPY FOLDER PATH';
+          sp.textContent = '📋 Copy Folder Path';
         }, 1800);
       }
     } catch (_) {}
@@ -923,11 +984,11 @@
 
   btnTriggerWindowsExplorer?.addEventListener('click', async () => {
     const sp = btnTriggerWindowsExplorer.querySelector('span');
-    if (sp) sp.textContent = 'OPENING EXPLORER...';
+    if (sp) sp.textContent = 'Opening Explorer...';
     await fetch('/api/open-folder', { method: 'POST' }).catch(() => {});
-    if (sp) sp.textContent = '✓ OPENED IN EXPLORER';
+    if (sp) sp.textContent = '✓ Opened in Explorer';
     setTimeout(() => {
-      if (sp) sp.textContent = '📂 LAUNCH EXPLORER';
+      if (sp) sp.textContent = '📂 Open in Explorer';
     }, 1800);
   });
 
@@ -964,11 +1025,11 @@
   async function runUpdateCheck({ silent = false } = {}) {
     if (!silent) {
       if (updateStatusBadge) {
-        updateStatusBadge.textContent = 'SCANNING REPO...';
+        updateStatusBadge.textContent = 'Checking...';
         updateStatusBadge.style.color = '#00d2ff';
       }
       if (updateStatusBanner) {
-        updateStatusBanner.innerHTML = 'Checking <code>kevindemara/UltraSuperConvertor</code> on GitHub for new releases or commits...';
+        updateStatusBanner.innerHTML = 'Checking <code>kevindemara/UltraSuperConvertor</code> on GitHub for new releases or updates...';
         updateStatusBanner.style.background = '#f8fafc';
         updateStatusBanner.style.borderColor = 'rgba(9,13,22,0.14)';
       }
@@ -986,10 +1047,10 @@
 
       const btnSpan = btnCheckUpdates?.querySelector('span');
       if (data.updateAvailable) {
-        if (btnSpan) btnSpan.textContent = '⚡ UPDATE AVAILABLE';
-        if (btnCheckUpdates) btnCheckUpdates.style.borderColor = '#0055ff';
+        if (btnSpan) btnSpan.textContent = '⚡ Update Available';
+        if (btnCheckUpdates) btnCheckUpdates.style.borderColor = '#2563eb';
         if (updateStatusBadge) {
-          updateStatusBadge.textContent = 'UPDATE AVAILABLE';
+          updateStatusBadge.textContent = 'Update Available';
           updateStatusBadge.style.color = '#10b981';
         }
         if (updateStatusBanner) {
@@ -1004,19 +1065,19 @@
         }
         if (btnApplyUpdateNow) {
           const sp = btnApplyUpdateNow.querySelector('span');
-          if (sp) sp.textContent = '🚀 AUTO-UPDATE & RESTART NOW';
+          if (sp) sp.textContent = '🚀 Update & Restart Now';
         }
       } else {
-        if (btnSpan) btnSpan.textContent = '↻ CHECK UPDATES';
+        if (btnSpan) btnSpan.textContent = '↻ Updates';
         if (updateStatusBadge) {
-          updateStatusBadge.textContent = '✓ UP TO DATE';
+          updateStatusBadge.textContent = '✓ Up to Date';
           updateStatusBadge.style.color = '#10b981';
         }
         if (updateStatusBanner) {
           updateStatusBanner.style.background = '#f8fafc';
           updateStatusBanner.style.borderColor = 'rgba(9,13,22,0.14)';
           updateStatusBanner.innerHTML = `
-            <strong style="color:#059669;display:block;margin-bottom:4px;">✓ Your UltraSuperConvertor instance is up to date!</strong>
+            <strong style="color:#059669;display:block;margin-bottom:4px;">✓ UltraSuperConvertor is up to date!</strong>
             <div style="font-size:0.8rem;color:#475569;">
               Running latest version <code>${escapeHtml(localLabel)}</code>${data.latestMessage ? ` — <em>"${escapeHtml(data.latestMessage)}"</em>` : ''}
             </div>
@@ -1024,12 +1085,12 @@
         }
         if (btnApplyUpdateNow) {
           const sp = btnApplyUpdateNow.querySelector('span');
-          if (sp) sp.textContent = '⚡ FORCE SYNC / RE-PULL MAIN';
+          if (sp) sp.textContent = '⚡ Re-Sync Latest';
         }
       }
     } catch (err) {
       if (!silent && updateStatusBanner) {
-        updateStatusBadge.textContent = 'OFFLINE / ERROR';
+        updateStatusBadge.textContent = 'Offline / Error';
         updateStatusBadge.style.color = '#f59e0b';
         updateStatusBanner.innerHTML = `<span style="color:#b91c1c;">Could not reach GitHub API: ${escapeHtml(err.message)}</span>`;
       }
@@ -1049,10 +1110,10 @@
     if (!btnApplyUpdateNow) return;
     btnApplyUpdateNow.disabled = true;
     const sp = btnApplyUpdateNow.querySelector('span');
-    if (sp) sp.textContent = 'PULLING FROM GITHUB...';
+    if (sp) sp.textContent = 'Updating from GitHub...';
     if (updateTerminalLog) {
       updateTerminalLog.hidden = false;
-      updateTerminalLog.textContent = '[UPDATER] Downloading and applying latest code from GitHub (kevindemara/UltraSuperConvertor)...\n';
+      updateTerminalLog.textContent = '[Updater] Downloading and applying latest code from GitHub (kevindemara/UltraSuperConvertor)...\n';
     }
 
     try {
@@ -1061,18 +1122,18 @@
       if (!data.ok) throw new Error(data.error || 'Update failed');
 
       if (updateTerminalLog) {
-        updateTerminalLog.textContent += `${data.log || 'Updated!'}\n[UPDATER] Waiting for server restart...`;
+        updateTerminalLog.textContent += `${data.log || 'Updated!'}\n[Updater] Waiting for server restart...`;
       }
-      if (sp) sp.textContent = '✓ UPDATED! RELOADING...';
+      if (sp) sp.textContent = '✓ Updated! Reloading...';
 
       setTimeout(() => {
         window.location.reload();
       }, 2200);
     } catch (err) {
       if (updateTerminalLog) {
-        updateTerminalLog.textContent += `\n[ERROR] ${err.message}`;
+        updateTerminalLog.textContent += `\n[Error] ${err.message}`;
       }
-      if (sp) sp.textContent = 'RETRY AUTO-UPDATE';
+      if (sp) sp.textContent = 'Retry Update';
       btnApplyUpdateNow.disabled = false;
     }
   });
@@ -1110,10 +1171,10 @@
     if (!item || !item.output) return;
 
     compareTelemetryBar.innerHTML = `
-      <div><strong>FILE:</strong> ${item.originalName}</div>
-      <div><strong>ORIGINAL:</strong> ${item.originalFormat} (${formatBytes(item.originalSize)})</div>
-      <div><strong>OPTIMIZED:</strong> ${item.output.format} (${formatBytes(item.output.size)})</div>
-      <div style="color:#34d399;"><strong>DELTA:</strong> ${item.output.savedBytes >= 0 ? `-${item.output.savedPercent}% (${formatBytes(item.output.savedBytes)} saved)` : `+${Math.abs(item.output.savedPercent)}%`}</div>
+      <div><strong>File:</strong> ${item.originalName}</div>
+      <div><strong>Original:</strong> ${item.originalFormat} (${formatBytes(item.originalSize)})</div>
+      <div><strong>Converted:</strong> ${item.output.format} (${formatBytes(item.output.size)})</div>
+      <div style="color:#34d399;"><strong>Saved:</strong> ${item.output.savedBytes >= 0 ? `-${item.output.savedPercent}% (${formatBytes(item.output.savedBytes)} saved)` : `+${Math.abs(item.output.savedPercent)}%`}</div>
     `;
 
     const isVideoCompare = item.mediaType === 'video' && ['MP4', 'WEBM', 'MOV'].includes(item.output.format);
@@ -1129,9 +1190,9 @@
       compareAfterVideo.muted = false;
       compareBeforeVideo.playbackRate = 1.0;
       compareAfterVideo.playbackRate = 1.0;
-      btnSyncSpeed.querySelector('span').textContent = '1.0× SPEED';
-      btnSyncMute.querySelector('span').textContent = '🔊 AUDIO ON';
-      syncPlayLabel.textContent = '▶ PLAY BOTH';
+      btnSyncSpeed.querySelector('span').textContent = '1.0× Speed';
+      btnSyncMute.querySelector('span').textContent = '🔊 Audio On';
+      syncPlayLabel.textContent = '▶ Play Both';
 
       setVideoCompareMode('side');
     } else {
@@ -1179,11 +1240,11 @@
     if (compareAfterVideo.paused) {
       compareBeforeVideo.currentTime = compareAfterVideo.currentTime;
       await Promise.allSettled([compareBeforeVideo.play(), compareAfterVideo.play()]);
-      syncPlayLabel.textContent = '⏸ PAUSE BOTH';
+      syncPlayLabel.textContent = '⏸ Pause Both';
     } else {
       compareBeforeVideo.pause();
       compareAfterVideo.pause();
-      syncPlayLabel.textContent = '▶ PLAY BOTH';
+      syncPlayLabel.textContent = '▶ Play Both';
     }
   });
 
@@ -1209,12 +1270,12 @@
     const nextRate = compareAfterVideo.playbackRate === 1.0 ? 0.5 : 1.0;
     compareAfterVideo.playbackRate = nextRate;
     compareBeforeVideo.playbackRate = nextRate;
-    btnSyncSpeed.querySelector('span').textContent = `${nextRate.toFixed(1)}× SPEED`;
+    btnSyncSpeed.querySelector('span').textContent = `${nextRate.toFixed(1)}× Speed`;
   });
 
   btnSyncMute?.addEventListener('click', () => {
     compareAfterVideo.muted = !compareAfterVideo.muted;
-    btnSyncMute.querySelector('span').textContent = compareAfterVideo.muted ? '🔇 MUTED' : '🔊 AUDIO ON';
+    btnSyncMute.querySelector('span').textContent = compareAfterVideo.muted ? '🔇 Muted' : '🔊 Audio On';
   });
 
   function updateSplitPosition(pct) {
@@ -1318,7 +1379,7 @@
     const pxH = Math.round(cropState.h * srcH);
     const pxX = Math.round(cropState.x * srcW);
     const pxY = Math.round(cropState.y * srcH);
-    cropPixelReadout.textContent = `CROP: ${pxW}×${pxH} PX @ (${pxX}, ${pxY})`;
+    cropPixelReadout.textContent = `Crop: ${pxW}×${pxH} px`;
   }
 
   function renderCanvasWatermark() {
@@ -1583,7 +1644,7 @@
 
     trimmerVideoEl.src = item.inputUrl;
     trimmerVideoEl.currentTime = trimInSec;
-    btnTrimmerPlayPause.textContent = '▶ PLAY SEGMENT';
+    btnTrimmerPlayPause.textContent = '▶ Play Clip';
     filmstripFrames.innerHTML = '';
 
     renderTrimHandles();
@@ -1621,7 +1682,7 @@
     trimInReadout.textContent = `${trimInSec.toFixed(2)}s`;
     trimOutReadout.textContent = `${trimOutSec.toFixed(2)}s`;
     const clipLen = Math.max(0.1, trimOutSec - trimInSec);
-    trimmerClipDuration.textContent = `CLIP LENGTH: ${formatTimecode(clipLen)}`;
+    trimmerClipDuration.textContent = `Length: ${formatTimecode(clipLen)}`;
   }
 
   function updateTrimmerPlayhead() {
@@ -1629,14 +1690,14 @@
     const cur = trimmerVideoEl.currentTime || 0;
     const pct = Math.max(0, Math.min(100, (cur / dur) * 100));
     timelinePlayhead.style.left = `${pct.toFixed(2)}%`;
-    trimmerCurrentTime.textContent = `PLAYHEAD: ${formatTimecode(cur)}`;
+    trimmerCurrentTime.textContent = `Time: ${formatTimecode(cur)}`;
 
     if (!trimmerVideoEl.paused && cur >= trimOutSec) {
       if (chkTrimmerLoop.checked) {
         trimmerVideoEl.currentTime = trimInSec;
       } else {
         trimmerVideoEl.pause();
-        btnTrimmerPlayPause.textContent = '▶ PLAY SEGMENT';
+        btnTrimmerPlayPause.textContent = '▶ Play Clip';
       }
     }
   }
@@ -1660,10 +1721,10 @@
         trimmerVideoEl.currentTime = trimInSec;
       }
       await trimmerVideoEl.play();
-      btnTrimmerPlayPause.textContent = '⏸ PAUSE';
+      btnTrimmerPlayPause.textContent = '⏸ Pause';
     } else {
       trimmerVideoEl.pause();
-      btnTrimmerPlayPause.textContent = '▶ PLAY SEGMENT';
+      btnTrimmerPlayPause.textContent = '▶ Play Clip';
     }
   });
 
@@ -1798,7 +1859,7 @@
   function showOfflineState() {
     engineStatusDot.classList.remove('online');
     engineStatusDot.classList.add('offline');
-    engineStatusText.textContent = 'OFFLINE';
+    engineStatusText.textContent = 'Offline';
     offlineOverlay.hidden = false;
   }
 
@@ -1807,8 +1868,8 @@
     const all = Array.from(itemsMap.values());
     const completed = all.filter((i) => i.status === 'completed' && i.output);
 
-    statQueueCount.textContent = `${all.length} FILE${all.length === 1 ? '' : 'S'}`;
-    queueFilterInfo.textContent = `${all.length} TOTAL • ${completed.length} COMPLETED`;
+    statQueueCount.textContent = `${all.length} file${all.length === 1 ? '' : 's'}`;
+    queueFilterInfo.textContent = `${all.length} file${all.length === 1 ? '' : 's'} • ${completed.length} done`;
 
     btnClearQueue.disabled = all.length === 0;
     btnProcessAll.disabled = all.length === 0;
