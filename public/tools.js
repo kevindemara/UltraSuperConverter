@@ -5,6 +5,9 @@
   let selected;
   let files = [];
   let busy = false;
+  const library = window.TOOL_LIBRARY;
+  const preferences = library.createPreferences(tools, { getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) });
+  let libraryView = 'all';
   const fileSizes = n => n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`;
   const el = (tag, className, content) => {
     const node = document.createElement(tag);
@@ -12,34 +15,116 @@
     if (content !== undefined) node.textContent = content;
     return node;
   };
-  function renderCatalog() {
-    const terms = $('toolSearch').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = tools.filter(tool => terms.every(term => `${tool.name} ${tool.group} ${tool.description}`.toLowerCase().includes(term)));
-    $('toolList').replaceChildren();
-    for (const group of [...new Set(matches.map(t => t.group))]) {
-      const section = el('section', 'tool-group');
-      section.append(el('h2', '', group));
-      for (const tool of matches.filter(t => t.group === group)) {
-        const button = el('button', 'tool-nav-button', tool.name);
-        button.type = 'button';
-        button.dataset.tool = tool.id;
-        button.disabled = busy;
-        if (tool.id === selected?.id) button.setAttribute('aria-current', 'true');
-        button.addEventListener('click', () => chooseTool(tool.id));
-        section.append(button);
-      }
-      $('toolList').append(section);
+  function icon(name) {
+    const ns = 'http://www.w3.org/2000/svg', definition = library.icons[name] || library.icons.grid;
+    const svg = document.createElementNS(ns, 'svg');
+    for (const [key, value] of Object.entries({ viewBox: definition.viewBox || '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false' })) svg.setAttribute(key, value);
+    for (const path of definition.paths || []) { const child = document.createElementNS(ns, 'path'); child.setAttribute('d', path); svg.append(child); }
+    for (const [cx, cy, r] of definition.circles || []) { const child = document.createElementNS(ns, 'circle'); child.setAttribute('cx', cx); child.setAttribute('cy', cy); child.setAttribute('r', r); svg.append(child); }
+    for (const [cx, cy, rx, ry] of definition.ellipses || []) { const child = document.createElementNS(ns, 'ellipse'); for (const [key, value] of Object.entries({ cx, cy, rx, ry })) child.setAttribute(key, value); svg.append(child); }
+    if (definition.label) { const text = document.createElementNS(ns, 'text'); for (const [key, value] of Object.entries({ x: '12', y: '16.5', 'text-anchor': 'middle', 'font-family': 'Consolas,monospace', 'font-size': definition.label.length > 2 ? '10' : '15', 'font-weight': '600', fill: 'currentColor', stroke: 'none' })) text.setAttribute(key, value); text.textContent = definition.label; svg.append(text); }
+    return svg;
+  }
+  const viewHash = view => ['all', 'favorites', 'recent'].includes(view) ? view : `category-${view}`;
+  function navigateView(view, preserveSearch = false) {
+    if (busy) return;
+    if (!preserveSearch) $('toolSearch').value = '';
+    const hash = viewHash(view);
+    if (location.hash.slice(1) === hash) showDirectory(view); else location.hash = hash;
+  }
+  function navigateTool(id) {
+    if (busy) return;
+    if (location.hash.slice(1) === id) chooseTool(id); else location.hash = id;
+  }
+  function renderNavigation() {
+    const state = preferences.state;
+    const active = $('workbench').hidden ? ($('toolSearch').value.trim() ? 'all' : libraryView) : library.categoryOf(selected)?.id;
+    const navButton = (id, label, count, glyph, category = '') => {
+      const button = el('button', `library-nav-button${category ? ` category-${category}` : ''}`); button.type = 'button'; button.disabled = busy;
+      button.append(icon(glyph), el('span', 'nav-label', label), el('span', 'nav-count', count));
+      button.setAttribute('aria-pressed', String(active === id)); button.dataset.view = id;
+      button.addEventListener('click', () => navigateView(id)); return button;
+    };
+    $('personalNavigation').replaceChildren(navButton('all', 'All tools', tools.length, 'grid'), navButton('favorites', 'Favorites', state.favorites.length, 'star'), navButton('recent', 'Recent', state.recent.length, 'recent'));
+    $('categoryNavigation').replaceChildren(...library.categories.map(category => navButton(category.id, category.name, tools.filter(t => library.metadata[t.id].category === category.id).length, category.icon, category.id)));
+    $('preferenceNote').textContent = preferences.available ? 'Favorites and recent tool names are saved in this browser. Your inputs aren’t saved.' : 'Browser storage is unavailable. Favorites and recents will last for this visit.';
+  }
+  function updateCurrentFavorite() {
+    if (!selected) return;
+    const favorite = preferences.state.favorites.includes(selected.id), button = $('favoriteCurrent');
+    button.replaceChildren(icon('star'), document.createTextNode(favorite ? 'Favorited' : 'Favorite'));
+    button.classList.toggle('is-favorite', favorite); button.setAttribute('aria-pressed', String(favorite));
+    button.setAttribute('aria-label', `${favorite ? 'Remove' : 'Add'} ${selected.name} ${favorite ? 'from' : 'to'} favorites`);
+  }
+  function toggleFavorite(tool, restoreFocus = false) {
+    preferences.toggleFavorite(tool.id); renderCatalog(); updateCurrentFavorite();
+    $('libraryAnnouncement').textContent = `${tool.name} ${preferences.state.favorites.includes(tool.id) ? 'added to' : 'removed from'} favorites.`;
+    if (restoreFocus) {
+      const replacement = [...$('toolList').querySelectorAll('[data-favorite-tool]')].find(button => button.dataset.favoriteTool === tool.id);
+      (replacement || $('directoryTitle')).focus({ preventScroll: true });
     }
-    if (!matches.length) $('toolList').append(el('p', 'empty-search', 'No matching tools. Try PDF, audio, text, or JSON.'));
-    $('toolCount').textContent = `${matches.length} of ${tools.length} tools · ${new Set(matches.map(t => t.group)).size} categories`;
+  }
+  function toolCard(tool) {
+    const category = library.categoryOf(tool), favorite = preferences.state.favorites.includes(tool.id);
+    const card = el('article', `tool-card category-${category.id}`), open = el('button', 'tool-card-open'); open.type = 'button'; open.disabled = busy;
+    open.setAttribute('aria-label', `Open ${tool.name}`); open.title = tool.name;
+    const badge = el('span', 'tool-card-icon'); badge.append(icon(library.metadata[tool.id].icon));
+    const copy = el('span', 'tool-card-copy'); copy.append(el('strong', 'tool-card-name', tool.name), el('span', 'tool-card-description', tool.description));
+    const details = el('span', 'tool-card-details'); details.append(el('span', 'tool-card-category', category.name), el('span', '', { text: 'Paste text or file', file: 'Upload a file', multi: 'Multiple files', none: 'No file needed' }[tool.input]));
+    open.append(badge, copy, details); open.addEventListener('click', () => navigateTool(tool.id));
+    const star = el('button', `tool-favorite${favorite ? ' is-favorite' : ''}`); star.type = 'button'; star.dataset.favoriteTool = tool.id;
+    star.append(icon('star')); star.setAttribute('aria-pressed', String(favorite)); star.setAttribute('aria-label', `${favorite ? 'Remove' : 'Add'} ${tool.name} ${favorite ? 'from' : 'to'} favorites`); star.title = favorite ? 'Remove favorite' : 'Add favorite'; star.addEventListener('click', () => toggleFavorite(tool, true));
+    card.append(open, star); return card;
+  }
+  function renderCatalog() {
+    const state = preferences.state, query = $('toolSearch').value.trim(), category = library.categories.find(c => c.id === libraryView);
+    const matches = library.selectTools(tools, { view: libraryView, query, sort: state.sort }, state);
+    $('directoryTitle').textContent = query ? 'Search results' : category?.name || { all: 'All tools', favorites: 'Favorites', recent: 'Recently used' }[libraryView];
+    if (!$('toolDirectory').hidden) document.title = `${$('directoryTitle').textContent} — UltraSuperConvertor`;
+    $('directoryDescription').textContent = query ? 'Search across every category by tool, format, or task.' : category?.description || { all: 'Search, choose a category, or favorite the tools you use most.', favorites: 'Your saved tools, ready whenever you need them.', recent: 'Your last 12 successfully used tools. Only tool names are remembered.' }[libraryView];
+    $('toolCount').textContent = `${matches.length} ${matches.length === 1 ? 'tool' : 'tools'}${query ? ' found' : libraryView === 'all' ? ' in 10 categories' : ''}`;
+    $('clearRecent').hidden = libraryView !== 'recent' || !!query || !state.recent.length;
+    $('toolSort').value = libraryView === 'recent' && !query ? 'recent' : state.sort;
+    $('toolSort').disabled = busy || libraryView === 'recent' && !query;
+    $('recentOrderOption').hidden = libraryView !== 'recent' || !!query;
+    $('gridView').setAttribute('aria-pressed', String(state.display === 'grid')); $('listView').setAttribute('aria-pressed', String(state.display === 'list'));
+    $('toolList').classList.toggle('compact-view', state.display === 'list'); $('toolList').replaceChildren();
+    const grouped = libraryView === 'all' && !query && state.sort === 'category';
+    if (grouped) {
+      for (const category of library.categories) {
+        const entries = matches.filter(tool => library.metadata[tool.id].category === category.id); if (!entries.length) continue;
+        const section = el('section', `directory-group category-${category.id}`), heading = el('div', 'directory-group-heading'), title = el('h2');
+        title.append(icon(category.icon), document.createTextNode(category.name)); heading.append(title, el('span', '', entries.length));
+        const grid = el('div', 'tool-card-grid'); grid.append(...entries.map(toolCard)); section.append(heading, grid); $('toolList').append(section);
+      }
+    } else if (matches.length) { const grid = el('div', 'tool-card-grid'); grid.append(...matches.map(toolCard)); $('toolList').append(grid); }
+    else {
+      const empty = el('div', 'library-empty'); empty.append(icon(query ? 'search' : libraryView === 'favorites' ? 'star' : 'recent'));
+      empty.append(el('h2', '', query ? 'No tools found' : libraryView === 'favorites' ? 'Make room for your favorites' : 'Your recent tools will appear here'));
+      empty.append(el('p', '', query ? 'Try a name, format, or task like “compress PDF”.' : libraryView === 'favorites' ? 'Click the star on any tool to keep it a click away.' : 'Run a tool successfully and find it here next time.'));
+      const action = el('button', 'outline-library-button', query ? 'Clear search' : 'Explore all tools'); action.type = 'button'; action.addEventListener('click', () => { if (query) { $('toolSearch').value = ''; renderCatalog(); $('toolSearch').focus(); } else navigateView('all'); }); empty.append(action); $('toolList').append(empty);
+    }
+    renderNavigation();
+  }
+  function showDirectory(view = 'all', focus = true) {
+    libraryView = view; $('workbench').hidden = true; $('toolDirectory').hidden = false; renderCatalog();
+    document.title = `${$('directoryTitle').textContent} — UltraSuperConvertor`;
+    if (focus) { window.scrollTo({ top: 0 }); $('directoryTitle').focus({ preventScroll: true }); }
+  }
+  function showWorkbench() {
+    $('toolDirectory').hidden = true; $('workbench').hidden = false;
+    const category = library.categoryOf(selected); $('currentToolIcon').className = `current-tool-icon category-${category.id}`; $('currentToolIcon').replaceChildren(icon(library.metadata[selected.id].icon));
+    updateCurrentFavorite(); renderNavigation(); window.scrollTo({ top: 0 }); $('toolName').focus({ preventScroll: true });
+    document.title = `${selected.name} — UltraSuperConvertor`;
   }
   function chooseTool(id) {
     if (busy) return;
     const next = tools.find(t => t.id === id) || tools.find(t => t.id === 'text-case');
+    if (selected?.id === next.id) { showWorkbench(); return; }
     const preservedText = selected?.input === 'text' && next.input === 'text' && !selected.sensitive && !next.sensitive ? $('toolText').value : '';
     selected = next;
     history.replaceState(null, '', `#${selected.id}`);
-    $('toolGroup').textContent = selected.group.toUpperCase();
+    $('toolGroup').textContent = library.categoryOf(selected).name.toUpperCase();
     $('toolName').textContent = selected.name;
     $('toolDescription').textContent = selected.description;
     $('openInWorkspace').href = `/workspace.html#${selected.id}`;
@@ -98,6 +183,7 @@
     $('runTool').textContent = selected.id === 'checksums' || selected.id === 'text-hash' ? 'Calculate hashes' : selected.input === 'none' ? 'Generate / run' : ['text-count', 'contrast-check'].includes(selected.id) ? 'Analyze' : selected.id.endsWith('diff') ? 'Compare texts' : 'Run tool';
     updateTextStats();
     renderCatalog();
+    showWorkbench();
     document.title = `${selected.name} — UltraSuperConvertor`;
   }
   function renderFiles() {
@@ -177,6 +263,7 @@
     busy = value;
     $('toolForm').setAttribute('aria-busy', String(value));
     for (const control of $('toolForm').querySelectorAll('button,input,select,textarea')) control.disabled = value;
+    $('browseTools').disabled = value;
     renderFiles(); renderCatalog();
   }
   function renderResults(data) {
@@ -212,7 +299,12 @@
     $('resultsSection').scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   }
   $('toolSearch').addEventListener('input', renderCatalog);
-  for (const link of document.querySelectorAll('.popular-tools a')) link.addEventListener('click', event => { if (busy) { event.preventDefault(); return; } $('toolSearch').value = ''; renderCatalog(); });
+  $('toolSort').addEventListener('change', () => { preferences.setSort($('toolSort').value); renderCatalog(); });
+  $('gridView').addEventListener('click', () => { preferences.setDisplay('grid'); renderCatalog(); });
+  $('listView').addEventListener('click', () => { preferences.setDisplay('list'); renderCatalog(); });
+  $('clearRecent').addEventListener('click', () => { preferences.clearRecent(); renderCatalog(); $('directoryTitle').focus(); });
+  $('favoriteCurrent').addEventListener('click', () => { if (selected) toggleFavorite(selected); });
+  $('browseTools').addEventListener('click', () => navigateView(libraryView, true));
   $('toolFiles').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
   for (const name of ['dragenter', 'dragover']) $('fileDrop').addEventListener(name, e => { e.preventDefault(); if (!busy) $('fileDrop').classList.add('dragging'); });
   for (const name of ['dragleave', 'drop']) $('fileDrop').addEventListener(name, e => { e.preventDefault(); $('fileDrop').classList.remove('dragging'); if (name === 'drop') addFiles(e.dataTransfer.files); });
@@ -240,12 +332,31 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Conversion failed. Check your input.');
       renderResults(data);
+      preferences.recordUse(selected.id);
       $('runStatus').textContent = 'Done. Your downloads are ready below.';
     } catch (error) {
       showError(error.message === 'Failed to fetch' ? 'Cannot reach the local server. Start UltraSuperConvertor and try again.' : error.message);
       $('runStatus').textContent = 'Update your input or settings and try again.';
     } finally { setBusy(false); }
   });
-  window.addEventListener('hashchange', () => chooseTool(location.hash.slice(1)));
-  chooseTool(location.hash.slice(1));
+  function route() {
+    const hash = location.hash.slice(1);
+    if (busy) { history.replaceState(null, '', `#${selected.id}`); return; }
+    if (tools.some(t => t.id === hash)) chooseTool(hash);
+    else { const category = hash.startsWith('category-') ? hash.slice('category-'.length) : ''; showDirectory(['all', 'favorites', 'recent'].includes(hash) ? hash : library.categories.some(c => c.id === category) ? category : 'all'); }
+  }
+  $('searchIcon').append(icon('search')); $('gridView').append(icon('grid')); $('listView').append(icon('list'));
+  $('browseTools').append(icon('back'), document.createTextNode('Browse tools'));
+  window.addEventListener('hashchange', route);
+  window.addEventListener('storage', event => { if (event.key === library.STORAGE_KEY || event.key === null) { preferences.reload(); renderCatalog(); updateCurrentFavorite(); } });
+  document.addEventListener('keydown', event => {
+    const shortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+    const editable = event.target.closest?.('input,textarea,select,[contenteditable="true"]');
+    if (busy || event.isComposing || !shortcut && (editable || event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey)) return;
+    event.preventDefault(); showDirectory(libraryView, false); history.pushState(null, '', `#${viewHash(libraryView)}`); $('toolSearch').focus(); $('toolSearch').select();
+  });
+  const mobileNavigation = window.matchMedia('(max-width: 860px)');
+  $('categoryMenu').open = !mobileNavigation.matches;
+  mobileNavigation.addEventListener('change', () => { $('categoryMenu').open = !mobileNavigation.matches; });
+  route();
 })();

@@ -7,21 +7,31 @@
   <link rel="icon" href="/assets/favicon.png">
   <link rel="stylesheet" href="/tools.css">
   <link rel="stylesheet" href="/utilities.css">
+  <link rel="stylesheet" href="/tool-library.css">
 </head>
-<body>
+<body class="toolbox-body">
   <header class="topbar">
     <a class="brand" href="/" aria-label="UltraSuperConvertor media studio"><img src="/assets/logo-opt.png" alt="" width="40" height="40"><span>UltraSuperConvertor<small>YOUR LOCAL CONVERSION WORKSPACE</small></span></a>
     <nav aria-label="Workspaces"><a href="/">Media studio</a><a href="/tools.html" aria-current="page">Toolbox <span>100</span></a><a href="/workspace.html">Workspace</a></nav>
     <span class="local-status"><i></i> Files stay on this computer</span>
   </header>
-  <div class="layout">
-    <aside class="catalog" aria-label="Converter catalog">
-      <div class="catalog-head"><h1>Find your tool</h1><label class="sr-only" for="toolSearch">Search converters</label><input id="toolSearch" type="search" placeholder="Search tools or formats…" autocomplete="off"><div class="catalog-count" id="toolCount">100 local tools</div><div class="popular-tools" aria-label="Popular tools"><a href="#text-case">Text formatter</a><a href="#text-count">Word count</a><a href="#text-diff">Diff checker</a><a href="#text-hash">MD5 / SHA</a><a href="#pdf-compress">PDF compressor</a></div></div>
-      <nav id="toolList" aria-label="Tools"></nav>
-      <p class="catalog-footer">No accounts. No uploads to the cloud.<br>Powered by your own computer.</p>
+  <div class="toolbox-layout">
+    <aside class="library-sidebar" aria-label="Tool navigation">
+      <p class="sidebar-label">YOUR TOOLBOX</p>
+      <nav id="personalNavigation" class="personal-navigation" aria-label="Your library"></nav>
+      <details id="categoryMenu" class="category-menu" open><summary>Categories <span>10</span></summary><nav id="categoryNavigation" class="category-navigation" aria-label="Tool categories"></nav></details>
+      <div class="sidebar-footer"><span class="local-indicator"></span> All processing stays local.<p id="preferenceNote">Favorites and recent tool names are saved in this browser. Your inputs aren’t saved.</p></div>
     </aside>
-    <main id="workbench">
-      <div class="workbench-heading"><div class="eyebrow" id="toolGroup">DATA</div><h2 id="toolName">JSON ↔ CSV</h2><p id="toolDescription"></p></div>
+    <main class="toolbox-content">
+      <section id="toolDirectory" class="tool-directory" aria-labelledby="directoryTitle">
+        <div class="directory-heading"><div><p class="directory-eyebrow">ULTRASUPERCONVERTOR / LIBRARY</p><h1 id="directoryTitle" tabindex="-1">All tools</h1><p id="directoryDescription">Search, choose a category, or favorite the tools you use most.</p></div><span class="directory-total">100 <small>local tools</small></span></div>
+        <div class="library-search"><span id="searchIcon" aria-hidden="true"></span><label class="sr-only" for="toolSearch">Search all tools</label><input id="toolSearch" type="search" placeholder="Search all 100 tools…" autocomplete="off"><kbd>Ctrl K</kbd></div>
+        <div class="directory-controls"><p id="toolCount" role="status" aria-live="polite">100 tools</p><button id="clearRecent" class="quiet-button" type="button" hidden>Clear recent</button><div class="directory-display"><label class="sr-only" for="toolSort">Sort tools</label><select id="toolSort"><option value="category">By category</option><option value="name">Name: A–Z</option><option id="recentOrderOption" value="recent" hidden>Most recent first</option></select><div class="view-switch" role="group" aria-label="Tool display"><button id="gridView" type="button" aria-label="Grid view" aria-pressed="true"></button><button id="listView" type="button" aria-label="List view" aria-pressed="false"></button></div></div></div>
+        <div id="toolList" class="tool-directory-results"></div>
+        <p id="libraryAnnouncement" class="sr-only" role="status" aria-live="polite"></p>
+      </section>
+      <section id="workbench" aria-labelledby="toolName" hidden>
+      <div class="workbench-heading"><div class="workbench-topline"><button id="browseTools" type="button" class="browse-tools"></button><button id="favoriteCurrent" type="button" class="favorite-current" aria-pressed="false"></button></div><div class="workbench-title"><span id="currentToolIcon" class="current-tool-icon" aria-hidden="true"></span><div><div class="eyebrow" id="toolGroup"></div><h2 id="toolName" tabindex="-1">Choose a tool</h2></div></div><p id="toolDescription"></p></div>
       <div class="conversion-strip" aria-hidden="true"><span id="sourceLabel">TEXT OR FILE</span><span class="conversion-arrow">⟶</span><span id="targetLabel">CONVERTED FILE</span><span class="strip-local">PROCESSED LOCALLY</span></div>
       <form id="toolForm" class="editor">
         <section class="input-section" aria-labelledby="inputHeading">
@@ -38,12 +48,14 @@
       <p id="toolError" class="error-message" role="alert" hidden></p>
       <section id="resultsSection" class="results" aria-labelledby="resultsHeading" hidden><div class="section-heading"><h3 id="resultsHeading">Your results</h3><span id="resultCount"></span></div><div id="resultList"></div><p class="limit-note">Downloads remain available for 24 hours while the local server is running. Save anything you want to keep.</p></section>
       <footer class="workbench-footer"><a href="/workspace.html" id="openInWorkspace">Build a recipe with this tool →</a><br>Need image compression, cropping, or video trimming? <a href="/">Open the media studio →</a></footer>
+      </section>
     </main>
   </div>
   <script src="/tools-catalog.js"></script>
   <script src="/advanced-catalog.js"></script>
   <script src="/utility-catalog.js"></script>
   <script src="/text-core.js"></script>
+  <script src="/tool-library.js"></script>
   <script src="/tools.js"></script>
 </body>
 </html>

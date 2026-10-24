@@ -4,11 +4,19 @@
   <img src="public/assets/wordmark.png" alt="ULTRA SUPER CONVERTOR" height="44" />
   <p><strong>Fast, Modern Local Media Converter &amp; Compressor</strong></p>
   <p>
-    <code>Sharp (libvips)</code> &bull; <code>HEIC / HEIF Support</code> &bull; <code>FFmpeg Static</code> &bull; <code>100% Local &amp; Private</code> &bull; <code>30-Tool Toolbox</code>
+    <code>Sharp (libvips)</code> &bull; <code>HEIC / HEIF Support</code> &bull; <code>FFmpeg Static</code> &bull; <code>100% Local &amp; Private</code> &bull; <code>100-Tool Toolbox</code>
   </p>
 </div>
 
 ---
+
+## New in v5.1 — organized tool library
+
+The [Toolbox](http://localhost:3847/tools.html#all) organizes all **100 tools into ten categories**, with small SVG icons, searchable cards and a compact list view. Search works across the whole library, including common terms such as “uppercase” and “compress PDF.” Use **Ctrl/Cmd+K** or **/** to jump to search; existing tool links still open directly.
+
+Star tools from their cards or workbench to keep them in **Favorites**. **Recent** shows the latest 12 successfully used tools, newest first, with a clear-history button. Favorites, recent tool IDs, display mode and sort order persist in this browser and synchronize between tabs. Tool inputs, files, passwords and results are never included in these preferences. If browser storage is unavailable, the library still works for the current session.
+
+Browsing the library and returning to the same tool preserves its current input and results. On small screens, personal navigation stays at the top and categories collapse into an expandable menu. Run `npm test` for all **138 checks**, including category coverage, icons, preference persistence and search behavior.
 
 ## New in v5.0 — 100 local tools
 
