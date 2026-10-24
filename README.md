@@ -4,9 +4,37 @@
   <img src="public/assets/wordmark.png" alt="ULTRA SUPER CONVERTOR" height="44" />
   <p><strong>Fast, Modern Local Media Converter &amp; Compressor</strong></p>
   <p>
-    <code>Sharp (libvips)</code> &bull; <code>HEIC / HEIF Support</code> &bull; <code>FFmpeg 6.1 Static</code> &bull; <code>100% Local &amp; Private</code> &bull; <code>HTML Setup Wizard</code>
+    <code>Sharp (libvips)</code> &bull; <code>HEIC / HEIF Support</code> &bull; <code>FFmpeg Static</code> &bull; <code>100% Local &amp; Private</code> &bull; <code>30-Tool Toolbox</code>
   </p>
 </div>
+
+---
+
+## New in v3.0 — the all-in-one Toolbox
+
+Open **Toolbox · 30 tools** in the header, or visit [`http://localhost:3847/tools.html`](http://localhost:3847/tools.html). The media studio remains available for image, video, and audio format conversion and compression.
+
+The Toolbox adds 30 tools across seven categories:
+
+- **Data:** JSON ↔ CSV, JSON ↔ YAML, JSON ↔ XML, CSV ↔ TSV, and JSON formatting/validation.
+- **Text:** Markdown → HTML, HTML → text, URL encoding, HTML entities, and text encoding conversion.
+- **Files:** binary Base64 conversion, multi-file checksums, and gzip compression/decompression.
+- **PDF:** images → PDF, merge, split/extract/reorder pages, rotate pages, and inspect/edit metadata.
+- **Subtitles:** SRT ↔ WebVTT conversion and timing shifts.
+- **Video:** extract frames, create contact sheets, reverse clips, rotate/flip pixels, and replace soundtracks.
+- **Audio:** waveform images, fades, silence trimming, channel splitting, and joining recordings.
+
+Search by tool or format, paste text or select files, arrange multi-file inputs with the arrow controls, and download the results. Examples are available for text tools. Processing happens locally.
+
+Toolbox limits: 100 MB per input file, 20 files/500 MB per batch, 10 MB text inputs, and two simultaneous jobs. Downloads expire after 24 hours; uploaded originals are removed after processing. PDF inputs must be unencrypted. Video reverse supports clips up to 60 seconds at a maximum 720px longest edge/30 fps. Audio silence trimming supports recordings up to 10 minutes. See [the complete feature checklist and format notes](FEATURES-30.md).
+
+**Runtime:** Node.js **20.19 or newer**; current Node.js LTS is recommended. Install dependencies with `npm install`, then run `npm start`. The updated image engine is Sharp 0.35.5/libvips 8.18.7.
+
+**Verification:** `npm test` checks all 30 tools using generated fixtures, multipart API requests and downloads, plus original media studio regression tests. `npm audit` checks dependencies.
+
+**Checkpoint:** `checkpoint/pre-all-in-one-2026-10-24` preserves the original v2.5 code at `2ce5cb7`.
+
+**API:** `GET /api/toolbox/catalog` returns tool definitions. `POST /api/toolbox/run` accepts multipart fields `toolId`, optional `text`, JSON-encoded `options`, and `files`; it returns `results` with download URLs and an `expiresAt` timestamp. Results are delivered as attachments via `GET /api/toolbox/download/:job/:name`. Toolbox storage is private under `.toolbox-results/`. For an isolated local workspace, set `USC_DATA_DIR` to a separate directory before starting the server.
 
 ---
 
@@ -14,7 +42,7 @@
 
 **UltraSuperConvertor** is a self-contained, local browser-based media compression, format conversion, resizing, and editing app for **Images (including Apple `.heic` / `.heif`), Videos, and Audio**.
 
-Every operation executes **100% locally on your machine** using **Sharp (`libvips` 8.15)**, **`heic-convert`**, and **bundled static FFmpeg 6.1 + FFprobe** binaries—with zero external cloud uploads, zero file size limits, and zero subscriptions.
+Every operation executes **100% locally on your machine** using **Sharp (`libvips` 8.18)**, **`heic-convert`**, and **bundled static FFmpeg + FFprobe** binaries—with zero external cloud uploads and zero subscriptions. Media studio uploads support up to 2 GB per file; Toolbox limits are listed above.
 
 ---
 
@@ -25,7 +53,7 @@ UltraSuperConvertor uses an **HTML Setup & Desktop Shortcut Wizard** (`setup-wiz
 ### Option A: Launch the HTML Setup Wizard
 1. Double-click **`setup-wizard.cmd`** in the project root (or open `http://localhost:3847/setup` / `setup-wizard.html` in your browser).
 2. Walk through the **4-Step Interactive Browser Wizard**:
-   - **Step 01 — Pre-Flight Scan**: Automatically detects your local **Node.js runtime**, **Sharp (`libvips`)** image core, **FFmpeg 6.1 + FFprobe** static binaries, and **`UltraSuperConvertor.ico`** desktop icon asset.
+   - **Step 01 — Pre-Flight Scan**: Automatically detects your local **Node.js runtime**, **Sharp (`libvips`)** image core, **FFmpeg + FFprobe** static binaries, and **`UltraSuperConvertor.ico`** desktop icon asset.
    - **Step 02 — Install & Verify Packages**: One-click button (`⚡ VERIFY & INSTALL PACKAGES`) runs `npm install`, verifies the static FFmpeg binary, and initializes the `uploads/` and `outputs/` workspace directories. *(Even on a brand-new Git clone before `node_modules` exists, `setup-wizard.cmd` boots a zero-dependency Node HTTP bridge via `installer/wizard-server.js` so the HTML wizard can install everything from the browser!)*
    - **Step 03 — Desktop Icon & Start Menu Shortcut**: Check **"Add UltraSuperConvertor Icon to Windows Desktop"** and **"Add to Windows Start Menu"** to generate native Windows `.lnk` shortcuts stamped with the custom multi-resolution `UltraSuperConvertor.ico` emblem.
    - **Step 04 — Ready to Launch**: Click **`🚀 OPEN ULTRASUPERCONVERTOR STUDIO`** to jump straight into the workspace.

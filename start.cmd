@@ -18,6 +18,13 @@ if %errorlevel% neq 0 (
     )
 )
 
+node -e "require('./lib/runtime').assertSupported()"
+if %errorlevel% neq 0 (
+    echo [ERROR] Install current Node.js LTS, then reopen UltraSuperConvertor.
+    pause
+    exit /b 1
+)
+
 if not exist "node_modules\" (
     echo [INFO] Installing dependencies for first-time setup...
     call npm.cmd install

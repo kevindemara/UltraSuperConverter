@@ -1,3 +1,4 @@
+require('./lib/runtime').assertSupported();
 const express = require('express');
 const multer = require('multer');
 const sharp = require('sharp');
@@ -24,11 +25,12 @@ const PORT = process.env.PORT || 3847;
 
 // Directories
 const ROOT_DIR = __dirname;
+const DATA_DIR = process.env.USC_DATA_DIR || ROOT_DIR;
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
-const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
-const OUTPUTS_DIR = path.join(ROOT_DIR, 'outputs');
-const THUMBS_DIR = path.join(ROOT_DIR, 'uploads', 'thumbs');
-const PID_FILE = path.join(ROOT_DIR, '.server.pid');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+const OUTPUTS_DIR = path.join(DATA_DIR, 'outputs');
+const THUMBS_DIR = path.join(DATA_DIR, 'uploads', 'thumbs');
+const PID_FILE = process.env.USC_PID_FILE || path.join(DATA_DIR, '.server.pid');
 
 [PUBLIC_DIR, UPLOADS_DIR, OUTPUTS_DIR, THUMBS_DIR].forEach((dir) => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -43,6 +45,7 @@ try {
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+app.use('/api/toolbox', require('./lib/toolbox-routes')(DATA_DIR));
 app.use(express.static(PUBLIC_DIR));
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use('/outputs', express.static(OUTPUTS_DIR));
@@ -1069,7 +1072,7 @@ app.get('/api/state', (req, res) => {
   const items = Array.from(mediaStore.values()).sort((a, b) => b.createdAt - a.createdAt);
   res.json({
     engine: {
-      name: 'UltraSuperConvertor Quantum Core v2.4',
+      name: `UltraSuperConvertor Core v${getLocalVersion()}`,
       sharpVersion: sharp.versions.sharp,
       libvipsVersion: sharp.versions.vips,
       ffmpegReady: fs.existsSync(ffmpegPath),
@@ -1642,6 +1645,8 @@ app.get('/api/wizard/preflight', (req, res) => {
   res.json({
     pid: process.pid,
     nodeVersion: process.version,
+    minimumNodeVersion: require('./lib/runtime').minimumNode,
+    nodeSupported: require('./lib/runtime').isSupported(),
     sharpReady: Boolean(sharp?.versions?.sharp),
     sharpVersion: sharp?.versions?.sharp || null,
     vipsVersion: sharp?.versions?.vips || null,
@@ -1940,7 +1945,7 @@ app.post('/api/shutdown', (req, res) => {
 const server = app.listen(PORT, () => {
   console.log('================================================================');
   console.log(`  ULTRASUPERCONVERTOR // QUANTUM MEDIA ENGINE ONLINE`);
-  console.log(`  GUI URL  : http://localhost:${PORT}`);
+  console.log(`  GUI URL  : http://localhost:${server.address().port}`);
   console.log(`  PID      : ${process.pid}`);
   console.log('================================================================');
 });

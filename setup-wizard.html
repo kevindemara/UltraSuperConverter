@@ -790,8 +790,8 @@
           fileProtocolNotice.hidden = true;
 
           diagNode.textContent = data.nodeVersion || 'Detected';
-          chipNode.textContent = 'Installed';
-          chipNode.className = 'status-chip';
+          chipNode.textContent = data.nodeSupported === false ? `Needs ${data.minimumNodeVersion}+` : 'Installed';
+          chipNode.className = data.nodeSupported === false ? 'status-chip pending' : 'status-chip';
 
           diagSharp.textContent = data.sharpReady ? `Ready (v${data.sharpVersion})` : 'Needs Install';
           chipSharp.textContent = data.sharpReady ? 'Ready' : 'Pending';
@@ -869,13 +869,14 @@
           try {
             const res = await fetch(`${API_BASE}/api/wizard/install`, { method: 'POST' });
             const data = await res.json();
+            if (!res.ok || data.ok === false) throw new Error(data.error || 'Package installation failed.');
             installProgressBar.value = 100;
             installTerminalLog.textContent += (data.log || 'Packages verified!') + '\nEverything is installed and ready!';
             installDone = true;
             btnNextStep.textContent = 'Next →';
             await checkPreflight();
           } catch (err) {
-            installTerminalLog.textContent += `\nCould not connect to the local helper. Please run setup-wizard.cmd.`;
+            installTerminalLog.textContent += `\n${err.message === 'Failed to fetch' ? 'Could not connect to the local helper. Please run setup-wizard.cmd.' : err.message}`;
             btnNextStep.textContent = 'Retry Install';
           } finally {
             btnNextStep.disabled = false;

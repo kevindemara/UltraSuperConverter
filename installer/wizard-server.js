@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execFile, spawn } = require('child_process');
+const { minimumNode, isSupported } = require('../lib/runtime');
 
 const PORT = 3847;
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -48,6 +49,8 @@ function getPreflightStatus() {
     pid: process.pid,
     bootstrapper: true,
     nodeVersion: process.version,
+    minimumNodeVersion: minimumNode,
+    nodeSupported: isSupported(),
     sharpReady,
     sharpVersion,
     vipsVersion,
@@ -79,6 +82,10 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (urlPath === '/api/wizard/install' && req.method === 'POST') {
+    if (!isSupported()) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ ok: false, error: `Node.js ${minimumNode} or newer is required. Install the current Node.js LTS, then restart the setup wizard.` }));
+    }
     const logs = [];
     logs.push(`[1/3] Node.js Runtime Verified: ${process.version}`);
     logs.push(`[2/3] Installing npm dependencies in ${ROOT_DIR}...`);
