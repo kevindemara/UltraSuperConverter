@@ -559,6 +559,100 @@
     </section>
   </main>
 
+  <!-- Modal Dialog: Media Preview Lightbox (Video, Audio & Image) -->
+  <dialog id="mediaPreviewDialog" class="tech-dialog media-preview-dialog" closedby="any" aria-labelledby="mediaPreviewTitle">
+    <div class="dialog-header">
+      <div class="dialog-title-wrap">
+        <span class="tech-tag" id="previewTypeBadge">Video Preview</span>
+        <h2 id="mediaPreviewTitle">surf.mp4</h2>
+      </div>
+      <div class="dialog-header-actions">
+        <div id="previewVersionToggleGroup" class="seg-group" hidden>
+          <button type="button" class="seg-btn active" id="btnPreviewVerOriginal">Original</button>
+          <button type="button" class="seg-btn" id="btnPreviewVerOutput">Converted</button>
+        </div>
+        <a id="btnPreviewExternalLink" href="#" target="_blank" rel="noopener" class="btn-tech btn-outline btn-xs" title="Open media directly in new browser tab">
+          <svg class="icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+          <span>Open In Tab</span>
+        </a>
+        <button type="button" class="btn-icon-close" id="btnCloseMediaPreview" aria-label="Close Preview">✕</button>
+      </div>
+    </div>
+
+    <div class="media-preview-body">
+      <!-- 1. Video Player Stage -->
+      <div id="previewVideoStage" class="preview-stage stage-video" hidden>
+        <div class="video-player-container">
+          <video id="previewVideoPlayer" controls playsinline preload="auto"></video>
+          <div id="videoUnsupportedNotice" class="unsupported-media-notice" hidden>
+            <div class="notice-icon">⚠️</div>
+            <div class="notice-text">
+              <h4>Preview Not Supported In Browser</h4>
+              <p>This video format (<code id="unsupportedVidFormat">AVI</code>) cannot be decoded directly by the browser before conversion.</p>
+              <p class="notice-hint">Click <strong>Convert</strong> to transcode it to <strong>MP4</strong> or <strong>WebM</strong>!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Audio Player Stage -->
+      <div id="previewAudioStage" class="preview-stage stage-audio" hidden>
+        <div class="audio-player-card">
+          <div class="audio-visualizer-orb">
+            <div class="orb-disc-ring"></div>
+            <div class="orb-bars-eq">
+              <span class="orb-bar bar-1"></span>
+              <span class="orb-bar bar-2"></span>
+              <span class="orb-bar bar-3"></span>
+              <span class="orb-bar bar-4"></span>
+              <span class="orb-bar bar-5"></span>
+              <span class="orb-bar bar-6"></span>
+              <span class="orb-bar bar-7"></span>
+            </div>
+          </div>
+          <div class="audio-info-wrap">
+            <h3 id="previewAudioTrackName">waves.wav</h3>
+            <p id="previewAudioTrackMeta">WAV Audio • 44.1 kHz • Stereo</p>
+          </div>
+          <audio id="previewAudioPlayer" controls preload="auto" class="audio-native-bar"></audio>
+        </div>
+      </div>
+
+      <!-- 3. Image Lightbox Stage -->
+      <div id="previewImageStage" class="preview-stage stage-image" hidden>
+        <div class="image-lightbox-container" id="imageLightboxContainer">
+          <img id="previewImagePlayer" src="" alt="Image Preview" class="lightbox-img" />
+        </div>
+        <div class="lightbox-toolbar">
+          <button type="button" class="btn-tech btn-outline btn-xs" id="btnZoomOut" title="Zoom Out">−</button>
+          <span class="mono-badge" id="zoomPercentBadge">100%</span>
+          <button type="button" class="btn-tech btn-outline btn-xs" id="btnZoomIn" title="Zoom In">+</button>
+          <button type="button" class="btn-tech btn-outline btn-xs" id="btnZoomReset" title="Fit to Screen">Fit Screen</button>
+        </div>
+      </div>
+
+      <!-- Bottom Bar: Metadata telemetry & Action buttons -->
+      <div class="preview-meta-footer">
+        <div class="preview-meta-stats" id="previewMetaStats">
+          <!-- Rendered dynamically: dimensions, codec, size, duration -->
+        </div>
+        <div class="preview-footer-actions">
+          <button type="button" class="btn-tech btn-outline btn-sm" id="btnPreviewStudioCrop" hidden>
+            <svg class="icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v14a2 2 0 002 2h14M18 22V8a2 2 0 00-2-2H2"/></svg>
+            <span>Crop &amp; Edit</span>
+          </button>
+          <button type="button" class="btn-tech btn-outline btn-sm" id="btnPreviewStudioTrim" hidden>
+            <svg class="icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>
+            <span>Trim Video</span>
+          </button>
+          <a id="btnPreviewDownload" href="#" download class="btn-tech btn-primary btn-sm">
+            <span>Download</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Modal Dialog: Before / After Quality Comparison -->
   <dialog id="compareDialog" class="tech-dialog compare-dialog" closedby="any" aria-labelledby="compareDialogTitle">
     <div class="dialog-header">
@@ -888,7 +982,7 @@
 
     <div class="studio-dialog-body" style="padding:18px 22px;display:flex;flex-direction:column;gap:12px;">
       <div class="studio-coords-bar" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <span>Installed: <strong id="updateLocalVerText">v2.4.0</strong></span>
+        <span>Installed: <strong id="updateLocalVerText">v2.5.0</strong></span>
         <span>Latest: <strong id="updateRemoteVerText">Checking...</strong></span>
         <span id="updateStatusBadge" style="color:#60a5fa;font-weight:700;">Checking...</span>
       </div>
@@ -940,6 +1034,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=14"></script>
+  <script src="/app.js?v=15"></script>
 </body>
 </html>

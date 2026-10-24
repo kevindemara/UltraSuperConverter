@@ -12,6 +12,12 @@ const fs = require('fs');
 const os = require('os');
 const { spawn, execFile } = require('child_process');
 const crypto = require('crypto');
+const {
+  isContextMenuInstalled,
+  isSendToInstalled,
+  installContextMenu,
+  uninstallContextMenu
+} = require('./bin/register-context-menu');
 
 const app = express();
 const PORT = process.env.PORT || 3847;
@@ -247,6 +253,7 @@ async function inspectAndRegisterFile(fileObj) {
     item.height = info.height;
     item.duration = info.duration;
     item.fps = info.fps;
+    item.bitrate = info.bitrate || null;
     item.codec = (info.videoCodec || info.audioCodec || item.originalFormat).toUpperCase();
     item.hasAudio = info.hasAudio;
 
@@ -1118,6 +1125,137 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
   }
 });
 
+let lastBrowserOpenTime = 0;
+
+// Scan directory recursively for supported media files and archives (up to maxFiles)
+function scanDirectoryForMedia(dirPath, maxFiles = 500) {
+  const found = [];
+  const queue = [dirPath];
+  const ignoredDirs = new Set(['.git', 'node_modules', '$recycle.bin', 'system volume information', '__macosx']);
+
+  while (queue.length > 0 && found.length < maxFiles) {
+    const current = queue.shift();
+    let entries;
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+
+    for (const ent of entries) {
+      if (ent.name.startsWith('.')) continue;
+      const full = path.join(current, ent.name);
+      if (ent.isDirectory()) {
+        if (!ignoredDirs.has(ent.name.toLowerCase())) {
+          queue.push(full);
+        }
+      } else if (ent.isFile()) {
+        const ext = path.extname(ent.name).toLowerCase();
+        if (IMAGE_EXTS.has(ext) || VIDEO_EXTS.has(ext) || AUDIO_EXTS.has(ext) || ext === '.zip') {
+          found.push(full);
+          if (found.length >= maxFiles) break;
+        }
+      }
+    }
+  }
+  return found;
+}
+
+// Queue local files or folders sent from Windows Explorer / CLI
+app.post('/api/queue-paths', async (req, res) => {
+  try {
+    const rawPaths = Array.isArray(req.body?.paths) ? req.body.paths : [];
+    if (rawPaths.length === 0) {
+      return res.status(400).json({ error: 'No paths provided' });
+    }
+
+    const registered = [];
+    const skipped = [];
+    const errors = [];
+
+    // Collect all actual file paths (expanding folders)
+    const filePaths = [];
+    for (const p of rawPaths) {
+      const resolved = path.resolve(p);
+      if (!fs.existsSync(resolved)) {
+        skipped.push({ name: p, reason: 'File or folder not found' });
+        continue;
+      }
+      const stat = fs.statSync(resolved);
+      if (stat.isDirectory()) {
+        const inDir = scanDirectoryForMedia(resolved);
+        if (inDir.length === 0) {
+          skipped.push({ name: path.basename(resolved), reason: 'No supported media files found in folder' });
+        } else {
+          filePaths.push(...inDir);
+        }
+      } else if (stat.isFile()) {
+        filePaths.push(resolved);
+      }
+    }
+
+    // Register each file
+    for (const filePath of filePaths) {
+      const origName = path.basename(filePath);
+      if (isZipFile(origName)) {
+        try {
+          const { extracted, skipped: zipSkipped } = await extractZipToItems(filePath, origName);
+          for (const ef of extracted) {
+            registered.push(await inspectAndRegisterFile(ef));
+          }
+          zipSkipped.forEach((s) => skipped.push({ ...s, zip: origName }));
+          if (extracted.length === 0) {
+            errors.push(`No supported media files found in "${origName}".`);
+          }
+        } catch (zipErr) {
+          errors.push(zipErr.message);
+        }
+        continue;
+      }
+
+      if (getMediaType(origName) === 'unknown') {
+        skipped.push({ name: origName, reason: 'Unsupported file type' });
+        continue;
+      }
+
+      // Copy file to uploads so the user's original file is never locked or modified
+      const safeOrig = origName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const destName = `${Date.now()}_${crypto.randomBytes(6).toString('hex')}_${safeOrig}`;
+      const destPath = path.join(UPLOADS_DIR, destName);
+      try {
+        fs.copyFileSync(filePath, destPath);
+        const item = await inspectAndRegisterFile({ originalname: origName, path: destPath });
+        registered.push(item);
+      } catch (copyErr) {
+        errors.push(`Failed to import ${origName}: ${copyErr.message}`);
+      }
+    }
+
+    if (registered.length > 0) {
+      broadcastEvent('files-added', { items: registered });
+    }
+
+    const now = Date.now();
+    const shouldOpenBrowser = (now - lastBrowserOpenTime > 3000);
+    if (shouldOpenBrowser) {
+      lastBrowserOpenTime = now;
+    }
+
+    res.json({
+      ok: true,
+      count: registered.length,
+      items: registered,
+      skipped,
+      errors,
+      shouldOpenBrowser
+    });
+  } catch (err) {
+    console.error('Queue paths error:', err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+
 // Generate Built-In Demo Media Suite (Images + 1080p Test Video + Audio)
 app.post('/api/generate-demo', async (req, res) => {
   try {
@@ -1212,6 +1350,28 @@ app.post('/api/generate-demo', async (req, res) => {
       createdItems.push(await inspectAndRegisterFile({
         originalname: 'HyperStream_1080p_TestClip.mp4',
         path: demoVidPath
+      }));
+    }
+
+    // 4. Synthesized Harmonic Pulse Stereo Audio Track (WAV) via FFmpeg lavfi
+    const demoAudioPath = path.join(UPLOADS_DIR, `${ts}_demo_Analog_Harmonic_Pulse.wav`);
+    await new Promise((resolve) => {
+      execFile(
+        ffmpegPath,
+        [
+          '-y',
+          '-f', 'lavfi', '-i', 'sine=frequency=528:duration=5',
+          '-c:a', 'pcm_s16le',
+          demoAudioPath
+        ],
+        { timeout: 15000 },
+        () => resolve()
+      );
+    });
+    if (fs.existsSync(demoAudioPath)) {
+      createdItems.push(await inspectAndRegisterFile({
+        originalname: 'Analog_Harmonic_Pulse.wav',
+        path: demoAudioPath
       }));
     }
 
@@ -1486,8 +1646,24 @@ app.get('/api/wizard/preflight', (req, res) => {
     sharpVersion: sharp?.versions?.sharp || null,
     vipsVersion: sharp?.versions?.vips || null,
     ffmpegReady: Boolean(ffmpegPath && fs.existsSync(ffmpegPath)),
-    desktopShortcutExists: fs.existsSync(shortcutPath)
+    desktopShortcutExists: fs.existsSync(shortcutPath),
+    contextMenuInstalled: isContextMenuInstalled(),
+    sendToInstalled: isSendToInstalled()
   });
+});
+
+app.post('/api/wizard/context-menu', (req, res) => {
+  try {
+    const { action = 'install', contextMenu = true, sendTo = true } = req.body || {};
+    if (action === 'uninstall') {
+      const result = uninstallContextMenu();
+      return res.json({ ok: true, uninstalled: true, result });
+    }
+    const result = installContextMenu({ contextMenu: Boolean(contextMenu), sendTo: Boolean(sendTo) });
+    res.json({ ok: true, installed: true, result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 app.post('/api/wizard/install', async (req, res) => {
@@ -1527,7 +1703,7 @@ app.post('/api/wizard/install', async (req, res) => {
 
 app.post('/api/wizard/shortcut', async (req, res) => {
   try {
-    const { desktop = true, startMenu = true } = req.body || {};
+    const { desktop = true, startMenu = true, contextMenu = true, sendTo = true } = req.body || {};
     const startCmdPath = path.join(ROOT_DIR, 'start.cmd');
     const icoPath = path.join(ROOT_DIR, 'UltraSuperConvertor.ico');
     const created = [];
@@ -1561,6 +1737,13 @@ app.post('/api/wizard/shortcut', async (req, res) => {
       `);
       created.push('Start Menu');
     }
+
+    if (contextMenu || sendTo) {
+      const resCtx = installContextMenu({ contextMenu: Boolean(contextMenu), sendTo: Boolean(sendTo) });
+      if (resCtx.contextMenu) created.push('Right-Click Menu');
+      if (resCtx.sendTo) created.push('Send To Menu');
+    }
+
 
     if (process.platform === 'win32' && (desktop || startMenu)) {
       await new Promise((resolve, reject) => {
@@ -1600,9 +1783,9 @@ function getLocalGitSha() {
 function getLocalVersion() {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
-    return pkg.version || '2.4.0';
+    return pkg.version || '2.5.0';
   } catch (_) {
-    return '2.4.0';
+    return '2.5.0';
   }
 }
 

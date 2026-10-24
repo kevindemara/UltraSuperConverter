@@ -293,6 +293,22 @@
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 
+  function formatDuration(sec) {
+    if (sec == null || isNaN(sec) || sec <= 0) return '';
+    const totalSec = Math.floor(sec);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   // ---- DOM References ----
   const presetCards = document.querySelectorAll('.preset-card');
   const activePresetBadge = document.getElementById('activePresetBadge');
@@ -769,11 +785,70 @@
     };
     const friendlyStatus = statusLabelMap[item.status] || item.status;
 
+    let thumbHtml = '';
+    const isAudioPlaying = activeInlineAudio && activeInlineAudio.id === item.id && !activeInlineAudio.audioEl.paused;
+
+    if (item.mediaType === 'audio') {
+      const durBadge = item.duration ? `<span class="item-duration-badge">${formatDuration(item.duration)}</span>` : '';
+      thumbHtml = `
+        <div class="item-thumb-box thumb-type-audio" data-id="${item.id}" role="button" tabindex="0" title="Click to play audio (${escapeHtml(item.originalName)})" aria-label="Play audio ${escapeHtml(item.originalName)}">
+          <div class="item-thumb-audio-bg">
+            <div class="sound-wave-eq ${isAudioPlaying ? 'is-playing' : ''}" id="wave-eq-${item.id}">
+              <span class="eq-bar bar-1"></span>
+              <span class="eq-bar bar-2"></span>
+              <span class="eq-bar bar-3"></span>
+              <span class="eq-bar bar-4"></span>
+              <span class="eq-bar bar-5"></span>
+            </div>
+          </div>
+          <span class="item-type-badge">${item.originalFormat}</span>
+          ${durBadge}
+          <div class="thumb-action-overlay">
+            <button type="button" class="thumb-action-pill pill-audio-toggle" data-id="${item.id}" aria-label="${isAudioPlaying ? 'Pause Audio' : 'Play Audio'}" title="${isAudioPlaying ? 'Pause Audio' : 'Play Audio'}">
+              <svg class="thumb-pill-icon icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" ${isAudioPlaying ? 'hidden' : ''}><path d="M8 5v14l11-7z"/></svg>
+              <svg class="thumb-pill-icon icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" ${isAudioPlaying ? '' : 'hidden'}><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    } else if (item.mediaType === 'video') {
+      const durBadge = item.duration ? `<span class="item-duration-badge">${formatDuration(item.duration)}</span>` : '';
+      thumbHtml = `
+        <div class="item-thumb-box thumb-type-video" data-id="${item.id}" role="button" tabindex="0" title="Click to play video (${escapeHtml(item.originalName)})" aria-label="Play video ${escapeHtml(item.originalName)}">
+          <img src="${thumbSrc}" alt="${escapeHtml(item.originalName)}" class="item-thumb-img" loading="lazy" />
+          <span class="item-type-badge">${item.originalFormat}</span>
+          ${durBadge}
+          <div class="thumb-action-overlay">
+            <button type="button" class="thumb-action-pill pill-play" data-id="${item.id}" aria-label="Play video" title="Preview Video">
+              <svg class="thumb-pill-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      // Image
+      const dimBadge = item.width && item.height ? `<span class="item-dim-badge">${item.width}×${item.height}</span>` : '';
+      thumbHtml = `
+        <div class="item-thumb-box thumb-type-image" data-id="${item.id}" role="button" tabindex="0" title="Click to preview image (${escapeHtml(item.originalName)})" aria-label="Preview image ${escapeHtml(item.originalName)}">
+          <img src="${thumbSrc}" alt="${escapeHtml(item.originalName)}" class="item-thumb-img" loading="lazy" />
+          <span class="item-type-badge">${item.originalFormat}</span>
+          ${dimBadge}
+          <div class="thumb-action-overlay">
+            <button type="button" class="thumb-action-pill pill-zoom" data-id="${item.id}" aria-label="Preview image" title="Preview Image">
+              <svg class="thumb-pill-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     card.innerHTML = `
-      <div class="item-thumb-box">
-        <img src="${thumbSrc}" alt="${item.originalName}" class="item-thumb-img" loading="lazy" />
-        <span class="item-type-badge">${item.originalFormat}</span>
-      </div>
+      ${thumbHtml}
 
       <div class="item-info">
         <div class="item-title-row">
@@ -847,9 +922,50 @@
     if (rmBtn) {
       rmBtn.addEventListener('click', () => deleteQueueItem(item.id));
     }
+
+    // Thumbnail click and preview interactions
+    const thumbBox = card.querySelector('.item-thumb-box');
+    if (thumbBox) {
+      if (item.mediaType === 'audio') {
+        const audioBtn = thumbBox.querySelector('.pill-audio-toggle');
+        if (audioBtn) {
+          audioBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleInlineAudio(item, card);
+          });
+        }
+        thumbBox.addEventListener('click', (e) => {
+          if (e.target.closest('.pill-audio-toggle')) return;
+          openMediaPreview(item);
+        });
+        thumbBox.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleInlineAudio(item, card);
+          }
+        });
+      } else {
+        thumbBox.addEventListener('click', () => {
+          openMediaPreview(item);
+        });
+        thumbBox.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openMediaPreview(item);
+          }
+        });
+      }
+    }
+
+    if (activeInlineAudio && activeInlineAudio.id === item.id) {
+      activeInlineAudio.card = card;
+    }
   }
 
   async function deleteQueueItem(id) {
+    if (activeInlineAudio && activeInlineAudio.id === id) {
+      stopInlineAudio();
+    }
     try {
       await fetch(`/api/items/${id}`, { method: 'DELETE' });
     } catch (_) {}
@@ -863,6 +979,7 @@
   }
 
   btnClearQueue.addEventListener('click', async () => {
+    stopInlineAudio();
     try {
       await fetch('/api/items/all', { method: 'DELETE' });
     } catch (_) {}
@@ -929,14 +1046,6 @@
 
   if (outputFolderDialog) {
     setupDialogLightDismiss(outputFolderDialog);
-  }
-
-  function escapeHtml(str) {
-    return String(str || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 
   async function refreshOutputFolderModal() {
@@ -1200,6 +1309,334 @@
 
   // Perform a silent background update check shortly after load
   setTimeout(() => runUpdateCheck({ silent: true }), 1500);
+
+  // ---- Inline Audio Playback Controller ----
+  let activeInlineAudio = null; // { id: string, audioEl: HTMLAudioElement, card: HTMLElement }
+
+  function stopInlineAudio() {
+    if (!activeInlineAudio) return;
+    try {
+      activeInlineAudio.audioEl.pause();
+      activeInlineAudio.audioEl.src = '';
+    } catch (_) {}
+
+    const prevCard = activeInlineAudio.card || document.getElementById(`card-${activeInlineAudio.id}`);
+    if (prevCard) {
+      const eq = prevCard.querySelector('.sound-wave-eq');
+      if (eq) eq.classList.remove('is-playing');
+      const pBtn = prevCard.querySelector('.pill-audio-toggle');
+      if (pBtn) {
+        pBtn.setAttribute('aria-label', 'Play Audio');
+        pBtn.title = 'Play Audio';
+        const pIcon = pBtn.querySelector('.icon-play');
+        const sIcon = pBtn.querySelector('.icon-pause');
+        if (pIcon) pIcon.removeAttribute('hidden');
+        if (sIcon) sIcon.setAttribute('hidden', '');
+      }
+    }
+    activeInlineAudio = null;
+  }
+
+  function toggleInlineAudio(item, card) {
+    if (activeInlineAudio && activeInlineAudio.id === item.id) {
+      if (!activeInlineAudio.audioEl.paused) {
+        activeInlineAudio.audioEl.pause();
+        const eq = card.querySelector('.sound-wave-eq');
+        if (eq) eq.classList.remove('is-playing');
+        const pBtn = card.querySelector('.pill-audio-toggle');
+        if (pBtn) {
+          pBtn.setAttribute('aria-label', 'Play Audio');
+          pBtn.title = 'Play Audio';
+          pBtn.querySelector('.icon-play')?.removeAttribute('hidden');
+          pBtn.querySelector('.icon-pause')?.setAttribute('hidden', '');
+        }
+        return;
+      } else {
+        activeInlineAudio.audioEl.play().catch(console.warn);
+        const eq = card.querySelector('.sound-wave-eq');
+        if (eq) eq.classList.add('is-playing');
+        const pBtn = card.querySelector('.pill-audio-toggle');
+        if (pBtn) {
+          pBtn.setAttribute('aria-label', 'Pause Audio');
+          pBtn.title = 'Pause Audio';
+          pBtn.querySelector('.icon-play')?.setAttribute('hidden', '');
+          pBtn.querySelector('.icon-pause')?.removeAttribute('hidden');
+        }
+        return;
+      }
+    }
+
+    // New item clicked: stop any previously playing inline audio
+    stopInlineAudio();
+
+    const audioUrl = (item.status === 'completed' && item.output?.url) ? item.output.url : item.inputUrl;
+    const audioEl = new Audio(audioUrl);
+    activeInlineAudio = { id: item.id, audioEl, card };
+
+    const eq = card.querySelector('.sound-wave-eq');
+    if (eq) eq.classList.add('is-playing');
+    const pBtn = card.querySelector('.pill-audio-toggle');
+    if (pBtn) {
+      pBtn.setAttribute('aria-label', 'Pause Audio');
+      pBtn.title = 'Pause Audio';
+      pBtn.querySelector('.icon-play')?.setAttribute('hidden', '');
+      pBtn.querySelector('.icon-pause')?.removeAttribute('hidden');
+    }
+
+    audioEl.addEventListener('ended', () => {
+      stopInlineAudio();
+    });
+
+    audioEl.addEventListener('error', (err) => {
+      console.warn('Audio playback error:', err);
+      stopInlineAudio();
+    });
+
+    audioEl.play().catch((err) => {
+      console.warn('Audio play prevented:', err);
+      stopInlineAudio();
+    });
+  }
+
+  // ---- Media Preview Lightbox (Video, Audio & Image) ----
+  const mediaPreviewDialog = document.getElementById('mediaPreviewDialog');
+  const previewTypeBadge = document.getElementById('previewTypeBadge');
+  const mediaPreviewTitle = document.getElementById('mediaPreviewTitle');
+  const previewVersionToggleGroup = document.getElementById('previewVersionToggleGroup');
+  const btnPreviewVerOriginal = document.getElementById('btnPreviewVerOriginal');
+  const btnPreviewVerOutput = document.getElementById('btnPreviewVerOutput');
+  const btnPreviewExternalLink = document.getElementById('btnPreviewExternalLink');
+  const btnCloseMediaPreview = document.getElementById('btnCloseMediaPreview');
+  const previewVideoStage = document.getElementById('previewVideoStage');
+  const previewVideoPlayer = document.getElementById('previewVideoPlayer');
+  const videoUnsupportedNotice = document.getElementById('videoUnsupportedNotice');
+  const unsupportedVidFormat = document.getElementById('unsupportedVidFormat');
+  const previewAudioStage = document.getElementById('previewAudioStage');
+  const previewAudioPlayer = document.getElementById('previewAudioPlayer');
+  const previewAudioTrackName = document.getElementById('previewAudioTrackName');
+  const previewAudioTrackMeta = document.getElementById('previewAudioTrackMeta');
+  const previewImageStage = document.getElementById('previewImageStage');
+  const previewImagePlayer = document.getElementById('previewImagePlayer');
+  const imageLightboxContainer = document.getElementById('imageLightboxContainer');
+  const btnZoomIn = document.getElementById('btnZoomIn');
+  const btnZoomOut = document.getElementById('btnZoomOut');
+  const btnZoomReset = document.getElementById('btnZoomReset');
+  const zoomPercentBadge = document.getElementById('zoomPercentBadge');
+  const previewMetaStats = document.getElementById('previewMetaStats');
+  const btnPreviewStudioCrop = document.getElementById('btnPreviewStudioCrop');
+  const btnPreviewStudioTrim = document.getElementById('btnPreviewStudioTrim');
+  const btnPreviewDownload = document.getElementById('btnPreviewDownload');
+
+  if (mediaPreviewDialog) {
+    setupDialogLightDismiss(mediaPreviewDialog);
+
+    if (btnCloseMediaPreview) {
+      btnCloseMediaPreview.addEventListener('click', () => {
+        mediaPreviewDialog.close();
+      });
+    }
+
+    mediaPreviewDialog.addEventListener('close', () => {
+      try {
+        if (previewVideoPlayer) {
+          previewVideoPlayer.pause();
+          previewVideoPlayer.removeAttribute('src');
+          previewVideoPlayer.load();
+        }
+        if (previewAudioPlayer) {
+          previewAudioPlayer.pause();
+          previewAudioPlayer.removeAttribute('src');
+          previewAudioPlayer.load();
+        }
+      } catch (_) {}
+    });
+  }
+
+  // Image Zoom State
+  let imageZoomLevel = 1.0;
+  function setImageZoom(zoom) {
+    imageZoomLevel = Math.min(5.0, Math.max(0.25, Math.round(zoom * 100) / 100));
+    if (previewImagePlayer) {
+      previewImagePlayer.style.transform = `scale(${imageZoomLevel})`;
+    }
+    if (zoomPercentBadge) {
+      zoomPercentBadge.textContent = `${Math.round(imageZoomLevel * 100)}%`;
+    }
+  }
+
+  if (btnZoomIn) {
+    btnZoomIn.addEventListener('click', () => setImageZoom(imageZoomLevel + 0.25));
+  }
+  if (btnZoomOut) {
+    btnZoomOut.addEventListener('click', () => setImageZoom(imageZoomLevel - 0.25));
+  }
+  if (btnZoomReset) {
+    btnZoomReset.addEventListener('click', () => setImageZoom(1.0));
+  }
+  if (imageLightboxContainer) {
+    imageLightboxContainer.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        e.preventDefault();
+        setImageZoom(imageZoomLevel + (e.deltaY < 0 ? 0.2 : -0.2));
+      }
+    }, { passive: false });
+  }
+  if (previewImagePlayer) {
+    previewImagePlayer.addEventListener('dblclick', () => {
+      setImageZoom(imageZoomLevel > 1.2 ? 1.0 : 2.0);
+    });
+  }
+
+  let currentPreviewItem = null;
+  let currentPreviewVersion = 'original';
+
+  function openMediaPreview(item, requestedVersion = 'auto') {
+    if (!item || !mediaPreviewDialog) return;
+    currentPreviewItem = item;
+
+    // Pause any active inline audio first
+    stopInlineAudio();
+
+    const hasOutput = item.status === 'completed' && item.output && item.output.url;
+    if (requestedVersion === 'auto') {
+      currentPreviewVersion = hasOutput ? 'output' : 'original';
+    } else {
+      currentPreviewVersion = requestedVersion;
+    }
+
+    if (hasOutput && previewVersionToggleGroup) {
+      previewVersionToggleGroup.hidden = false;
+      btnPreviewVerOriginal.classList.toggle('active', currentPreviewVersion === 'original');
+      btnPreviewVerOutput.classList.toggle('active', currentPreviewVersion === 'output');
+
+      btnPreviewVerOriginal.onclick = () => {
+        if (currentPreviewVersion === 'original') return;
+        currentPreviewVersion = 'original';
+        btnPreviewVerOriginal.classList.add('active');
+        btnPreviewVerOutput.classList.remove('active');
+        renderPreviewStage();
+      };
+      btnPreviewVerOutput.onclick = () => {
+        if (currentPreviewVersion === 'output') return;
+        currentPreviewVersion = 'output';
+        btnPreviewVerOutput.classList.add('active');
+        btnPreviewVerOriginal.classList.remove('active');
+        renderPreviewStage();
+      };
+    } else if (previewVersionToggleGroup) {
+      previewVersionToggleGroup.hidden = true;
+      currentPreviewVersion = 'original';
+    }
+
+    renderPreviewStage();
+    mediaPreviewDialog.showModal();
+  }
+
+  function renderPreviewStage() {
+    const item = currentPreviewItem;
+    if (!item) return;
+
+    const isOutput = currentPreviewVersion === 'output' && item.output;
+    const mediaUrl = isOutput ? item.output.url : item.inputUrl;
+    const mediaName = isOutput ? item.output.fileName : item.originalName;
+    const mediaFormat = isOutput ? item.output.format : item.originalFormat;
+    const mediaSize = isOutput ? item.output.size : item.originalSize;
+    const mediaWidth = isOutput ? (item.output.width || item.width) : item.width;
+    const mediaHeight = isOutput ? (item.output.height || item.height) : item.height;
+    const mediaCodec = isOutput ? item.output.format : (item.codec || item.originalFormat);
+
+    if (mediaPreviewTitle) {
+      mediaPreviewTitle.textContent = mediaName;
+      mediaPreviewTitle.title = mediaName;
+    }
+    if (btnPreviewExternalLink) {
+      btnPreviewExternalLink.href = mediaUrl;
+    }
+    if (btnPreviewDownload) {
+      btnPreviewDownload.href = mediaUrl;
+      btnPreviewDownload.download = mediaName;
+    }
+
+    // Reset stages
+    if (previewVideoStage) previewVideoStage.hidden = true;
+    if (previewAudioStage) previewAudioStage.hidden = true;
+    if (previewImageStage) previewImageStage.hidden = true;
+    if (btnPreviewStudioCrop) btnPreviewStudioCrop.hidden = true;
+    if (btnPreviewStudioTrim) btnPreviewStudioTrim.hidden = true;
+
+    // Render telemetry chips in footer
+    if (previewMetaStats) {
+      let statsHtml = `<span class="preview-stat-chip">Format: <strong>${escapeHtml(mediaFormat)}</strong></span>`;
+      statsHtml += `<span class="preview-stat-chip">Size: <strong>${formatBytes(mediaSize)}</strong></span>`;
+      if (mediaWidth && mediaHeight) {
+        statsHtml += `<span class="preview-stat-chip">Resolution: <strong>${mediaWidth}×${mediaHeight}</strong></span>`;
+      }
+      if (item.duration) {
+        statsHtml += `<span class="preview-stat-chip">Duration: <strong>${item.duration.toFixed(1)}s</strong></span>`;
+      }
+      if (mediaCodec) {
+        statsHtml += `<span class="preview-stat-chip">Codec: <strong>${escapeHtml(mediaCodec)}</strong></span>`;
+      }
+      if (isOutput && item.output && item.output.savedBytes !== undefined) {
+        const isSaved = item.output.savedBytes >= 0;
+        statsHtml += `<span class="preview-stat-chip" style="color:${isSaved ? '#10b981' : '#f59e0b'};">Saved: <strong>${isSaved ? '-' : '+'}${Math.abs(item.output.savedPercent)}%</strong></span>`;
+      }
+      previewMetaStats.innerHTML = statsHtml;
+    }
+
+    if (item.mediaType === 'video') {
+      if (previewTypeBadge) previewTypeBadge.textContent = 'Video Preview';
+      if (previewVideoStage) previewVideoStage.hidden = false;
+      if (videoUnsupportedNotice) videoUnsupportedNotice.hidden = true;
+      if (previewVideoPlayer) {
+        previewVideoPlayer.hidden = false;
+        previewVideoPlayer.src = mediaUrl;
+        previewVideoPlayer.onerror = () => {
+          if (videoUnsupportedNotice) videoUnsupportedNotice.hidden = false;
+          if (unsupportedVidFormat) unsupportedVidFormat.textContent = mediaFormat;
+          previewVideoPlayer.hidden = true;
+        };
+        previewVideoPlayer.load();
+        previewVideoPlayer.play().catch(() => {});
+      }
+
+      if (!isOutput && btnPreviewStudioTrim) {
+        btnPreviewStudioTrim.hidden = false;
+        btnPreviewStudioTrim.onclick = () => {
+          mediaPreviewDialog.close();
+          openVideoTrimmer(item);
+        };
+      }
+    } else if (item.mediaType === 'audio') {
+      if (previewTypeBadge) previewTypeBadge.textContent = 'Audio Preview';
+      if (previewAudioStage) previewAudioStage.hidden = false;
+      if (previewAudioTrackName) previewAudioTrackName.textContent = mediaName;
+      const durText = item.duration ? `${item.duration.toFixed(1)}s` : 'Audio';
+      if (previewAudioTrackMeta) {
+        previewAudioTrackMeta.textContent = `${mediaFormat} Audio • ${durText} • ${formatBytes(mediaSize)}`;
+      }
+
+      if (previewAudioPlayer) {
+        previewAudioPlayer.src = mediaUrl;
+        previewAudioPlayer.load();
+        previewAudioPlayer.play().catch(() => {});
+      }
+    } else {
+      // Image
+      if (previewTypeBadge) previewTypeBadge.textContent = 'Image Preview';
+      if (previewImageStage) previewImageStage.hidden = false;
+      setImageZoom(1.0);
+      if (previewImagePlayer) previewImagePlayer.src = mediaUrl;
+
+      if (!isOutput && btnPreviewStudioCrop) {
+        btnPreviewStudioCrop.hidden = false;
+        btnPreviewStudioCrop.onclick = () => {
+          mediaPreviewDialog.close();
+          openImageStudio(item);
+        };
+      }
+    }
+  }
 
   // ---- Interactive Before / After Split-Screen & Synchronized Dual-Video Comparator ----
   const compareStage = document.getElementById('compareStage');

@@ -1,6 +1,6 @@
 {
   "name": "ultra-super-convertor",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "UltraSuperConvertor - High-Tech Image, Video & Audio Compressor, Converter & Resizer Studio",
   "main": "server.js",
   "scripts": {
