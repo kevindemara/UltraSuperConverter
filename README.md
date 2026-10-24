@@ -10,7 +10,46 @@
 
 ---
 
-## New in v4.0 — background workspace and 20 advanced tools
+## New in v5.0 — 100 local tools
+
+This release adds **50 everyday utilities**, bringing the Toolbox to **100 tools**, alongside the ten persistent Workspace capabilities. Open **Toolbox · 100 tools** in the header. The complete new-feature list is in [FEATURES-110.md](FEATURES-110.md).
+
+Popular starting points:
+
+- [Text formatter](http://localhost:3847/tools.html#text-case): ALL CAPS, lowercase, capitalization, title/sentence/toggled case.
+- [Word and character counter](http://localhost:3847/tools.html#text-count): words, visible Unicode characters, code points, bytes, lines, sentences, paragraphs, and estimated reading/speaking times.
+- [Text diff checker](http://localhost:3847/tools.html#text-diff): line/word/character comparisons, highlighted additions/removals, and HTML/JSON downloads.
+- [MD5 / SHA hashes](http://localhost:3847/tools.html#text-hash), [AES encryption](http://localhost:3847/tools.html#aes-encrypt), and [PDF compressor](http://localhost:3847/tools.html#pdf-compress).
+
+The new tools also cover pasted-text cleanup, line sorting/deduplication, find/replace, regex testing, slugs, naming conventions, wrapping/truncation, Unicode normalization, email/URL/IP extraction, word frequencies, byte/Morse encodings, JSON queries/diffs/flattening/JSONL, CSV filtering, SQL/code formatting, CSS/JavaScript minification, URL editing, JWT and certificate inspection, password/UUID/token generation, password digests, PDF blank-page removal/paper resizing/grayscale, QR generation/reading, color conversion/contrast, units, and timestamps.
+
+Text workbenches show live counts, provide quick case buttons, and preserve pasted text when switching between ordinary text tools. Results can be downloaded, copied in full, or reused as input. Comparisons have multiline controls and highlighted output. Pasted text requests use JSON so browser multipart line-ending normalization cannot silently change the bytes being hashed or compared. Text diffs treat CRLF/LF as equivalent by default; that option can be disabled.
+
+### Hashes, encryption and private inputs
+
+- MD5/SHA digests are **one-way hashes**, not encryption. MD5 and SHA-1 are included for legacy checksums. HMAC authenticates a message with a secret key.
+- AES uses password-derived keys with random salts, random 96-bit nonces, and AES-256-GCM authentication. Its JSON envelope must be retained to decrypt the original bytes; wrong passwords and modified envelopes are rejected. Encryption is limited to 32 MB per binary file; envelope uploads support 48 MB.
+- Scrypt and bcrypt tools create and verify password digests. Bcrypt rejects passwords exceeding 72 UTF-8 bytes. Generated passwords and tokens use Node's cryptographic random source.
+- Tools carrying passwords, HMAC keys, authentication tokens or generated secrets are excluded from saved Workspace recipes and persistent job history. Their secret fields are not written into result manifests. Results, including decrypted text or generated passwords, are kept in the local Toolbox download area for up to **24 hours**; source uploads are removed after processing. The standalone Toolbox does not write its form fields to browser storage.
+- JWT decoding does not verify a signature or establish trust. Certificate inspection does not validate a trust chain. ROT13/Caesar is a puzzle encoding, not secure encryption.
+
+### Utility limits and behavior
+
+Pasted utility text is limited to 1 MB. Live counts pause above 100,000 characters; the full counter still accepts 1 MB. Word counts use English `Intl.Segmenter` word boundaries; character counts use grapheme clusters so a joined emoji remains one visible character. Reading/speaking times are estimates. Uploaded text utilities remove an initial UTF-8 BOM.
+
+Diffs accept 100,000 total characters and have a bounded edit/time budget. Regex input is limited to 200,000 characters, matches are capped at 1,000, and execution takes place in a worker with a two-second deadline. Code formatting/minification accepts up to 500,000 characters; SQL formatting accepts 200,000. Code and SQL are never executed; links and decoded QR content are never visited automatically.
+
+PDF structure compression preserves selectable text and optimizes serialization, without promising to recompress embedded images. Optional raster compression rebuilds scanned pages as JPEGs and removes selectable text, forms and interactive links. The tool returns the **original bytes when its candidate is larger**, and always reports input/output sizes and actual savings. Raster compression, grayscale and blank-page detection accept up to 40 pages with a 20-megapixel rendered-page limit. Blank-page decisions should be reviewed in the generated report before replacing the original. Paper resizing embeds page content and does not carry interactive forms or annotations into the new layout.
+
+QR generation exports PNG/SVG, and the reader decodes clear images locally. Color conversion supports opaque sRGB colors; CMYK is approximate. Contrast output checks one WCAG color pair rather than claiming whole-page accessibility. Unit conversion uses fixed physical/IEC/decimal-storage factors, with case-sensitive storage symbols such as `B`, `b`, `MB` and `MiB`; it does not use currency rates. ISO date input requires an explicit UTC offset, and display time zones use IANA names.
+
+The Toolbox API now accepts both multipart uploads and JSON `{ toolId, text, options }` requests at `POST /api/toolbox/run`. All private-tool routes reject foreign browser origins and non-local hostnames. Runtime remains **Node.js 22.13+**. Run `npm test` for all **130 checks** and `npm audit` for dependency validation.
+
+Checkpoint before this expansion: `checkpoint/pre-utilities-50-2026-10-24`. Completed release: `checkpoint/utilities-50-complete-2026-10-24`.
+
+---
+
+## v4.0 — background workspace and 20 advanced tools
 
 Open **Workspace** in the header or visit [`http://localhost:3847/workspace.html`](http://localhost:3847/workspace.html). This release adds **30 larger features**: ten workflow capabilities and twenty advanced tools, bringing the Toolbox to **50 tools**. The complete second-round checklist is in [FEATURES-60.md](FEATURES-60.md).
 

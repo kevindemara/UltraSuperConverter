@@ -116,3 +116,23 @@ test('A second app instance cannot overwrite an active persistent workspace', ()
   assert.throws(() => new WorkspaceStore(root), /already open/);
   assert.equal(JSON.parse(require('node:fs').readFileSync(router.store.lockFile, 'utf8')).token, router.store.lockToken);
 });
+test('Secret-bearing tools cannot enter saved recipes or persistent job history', async () => {
+  const before = router.store.state.jobs.length;
+  for (const toolId of ['aes-encrypt', 'hmac', 'password-generate', 'scrypt-password', 'bcrypt-password', 'jwt-inspect']) {
+    const value = recipe([{ toolId, options: { password: 'never-save-this', key: 'never-save-this' } }]);
+    assert.equal((await request('/recipes', 'POST', value)).status, 400);
+    assert.equal((await request('/jobs', 'POST', { recipe: value, text: 'private' })).status, 400);
+  }
+  assert.equal(router.store.state.jobs.length, before);
+  assert.ok(!(await fs.readFile(router.store.stateFile, 'utf8')).includes('never-save-this'));
+});
+test('Source-free utility generators run through background recipes', async () => {
+  const job = await enqueue(recipe([{ toolId: 'uuid-generate', options: { count: 3 } }])); const done = await waitJob(job.id);
+  assert.equal(done.status, 'completed', done.error); assert.equal(done.results.length, 2);
+});
+test('Atomic workspace saves tolerate a transient Windows destination lock', () => {
+  const syncFs = require('node:fs'), original = syncFs.renameSync; let attempts = 0;
+  syncFs.renameSync = (...args) => { if (attempts++ === 0) { const error = new Error('Temporary destination lock'); error.code = 'EPERM'; throw error; } return original(...args); };
+  try { router.store.persist(); assert.equal(attempts, 2); }
+  finally { syncFs.renameSync = original; }
+});

@@ -6,16 +6,17 @@
   <title>Toolbox — UltraSuperConvertor</title>
   <link rel="icon" href="/assets/favicon.png">
   <link rel="stylesheet" href="/tools.css">
+  <link rel="stylesheet" href="/utilities.css">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/" aria-label="UltraSuperConvertor media studio"><img src="/assets/logo-opt.png" alt="" width="40" height="40"><span>UltraSuperConvertor<small>YOUR LOCAL CONVERSION WORKSPACE</small></span></a>
-    <nav aria-label="Workspaces"><a href="/">Media studio</a><a href="/tools.html" aria-current="page">Toolbox <span>50</span></a><a href="/workspace.html">Workspace</a></nav>
+    <nav aria-label="Workspaces"><a href="/">Media studio</a><a href="/tools.html" aria-current="page">Toolbox <span>100</span></a><a href="/workspace.html">Workspace</a></nav>
     <span class="local-status"><i></i> Files stay on this computer</span>
   </header>
   <div class="layout">
     <aside class="catalog" aria-label="Converter catalog">
-      <div class="catalog-head"><h1>Find your tool</h1><label class="sr-only" for="toolSearch">Search converters</label><input id="toolSearch" type="search" placeholder="Search tools or formats…" autocomplete="off"><div class="catalog-count" id="toolCount">30 tools · 7 categories</div></div>
+      <div class="catalog-head"><h1>Find your tool</h1><label class="sr-only" for="toolSearch">Search converters</label><input id="toolSearch" type="search" placeholder="Search tools or formats…" autocomplete="off"><div class="catalog-count" id="toolCount">100 local tools</div><div class="popular-tools" aria-label="Popular tools"><a href="#text-case">Text formatter</a><a href="#text-count">Word count</a><a href="#text-diff">Diff checker</a><a href="#text-hash">MD5 / SHA</a><a href="#pdf-compress">PDF compressor</a></div></div>
       <nav id="toolList" aria-label="Tools"></nav>
       <p class="catalog-footer">No accounts. No uploads to the cloud.<br>Powered by your own computer.</p>
     </aside>
@@ -27,10 +28,11 @@
           <div class="section-heading"><h3 id="inputHeading">Input</h3><button id="loadExample" type="button" class="quiet-button">Load example</button></div>
           <div id="fileDrop" class="file-drop"><label class="file-picker" for="toolFiles">Choose files<input id="toolFiles" type="file" multiple></label><span id="fileHelp">or drop files here</span></div>
           <ol id="fileList" class="file-list" aria-label="Input files in conversion order"></ol>
-          <div id="textInputArea"><div class="text-input-heading"><label for="toolText">Or paste text</label><span>Used when no file is selected</span></div><textarea id="toolText" spellcheck="false" placeholder="Paste your content here…"></textarea></div>
-          <p class="limit-note">Up to 20 files · 100 MB per file · 500 MB per batch. Text input: 10 MB.</p>
+          <div id="textInputArea"><div class="text-input-heading"><label for="toolText">Or paste text</label><span>Used when no file is selected</span></div><textarea id="toolText" spellcheck="false" placeholder="Paste your content here…"></textarea><div id="liveTextStats" class="live-text-stats" aria-label="Live text counts"></div><div id="caseActions" class="case-actions" hidden><button type="button" data-case="upper">ALL CAPS</button><button type="button" data-case="lower">lowercase</button><button type="button" data-case="capitalize">Capitalize</button><button type="button" data-case="sentence">Sentence case</button></div></div>
+          <p class="limit-note" id="inputLimits">Up to 20 files · 100 MB per file · 500 MB per batch. Text input: 10 MB.</p>
         </section>
         <section id="optionsSection" class="options-section" aria-labelledby="optionsHeading"><h3 id="optionsHeading">Options</h3><div id="toolOptions" class="options-grid"></div></section>
+        <p id="sensitiveNote" class="sensitive-note" hidden>Secret-bearing tools stay out of saved recipes and job history. Results are stored only in local temporary downloads for up to 24 hours.</p>
         <div class="run-bar"><button type="submit" class="primary-button" id="runTool">Convert</button><span id="runStatus" role="status" aria-live="polite">Ready when you are.</span></div>
       </form>
       <p id="toolError" class="error-message" role="alert" hidden></p>
@@ -40,6 +42,8 @@
   </div>
   <script src="/tools-catalog.js"></script>
   <script src="/advanced-catalog.js"></script>
+  <script src="/utility-catalog.js"></script>
+  <script src="/text-core.js"></script>
   <script src="/tools.js"></script>
 </body>
 </html>

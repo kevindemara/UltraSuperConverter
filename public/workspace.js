@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const tools = [...window.CONVERTER_TOOLS, ...window.ADVANCED_TOOLS];
+  const tools = [...window.CONVERTER_TOOLS, ...window.ADVANCED_TOOLS, ...window.UTILITY_TOOLS].filter(tool => !tool.sensitive);
   const $ = id => document.getElementById(id);
   const el = (tag, className = '', text) => { const node = document.createElement(tag); node.className = className; if (text !== undefined) node.textContent = text; return node; };
   const button = (title, action, className = 'quiet-button') => { const node = el('button', className, title); node.type = 'button'; node.addEventListener('click', () => Promise.resolve().then(action).catch(showError)); return node; };
@@ -52,10 +52,11 @@
       if (index === 0 && tool.sample) card.append(button('Load this tool’s example', () => { $('sourceText').value = tool.sample; selected = []; renderSelected(); saveDraft(); }));
       const options = el('div', 'step-options');
       for (const field of tool.fields) {
-        const container = el('div', 'step-field'), label = el('label', '', field.label), input = el(field.type === 'select' ? 'select' : 'input');
+        const container = el('div', 'step-field'), label = el('label', '', field.label), input = el(field.type === 'select' ? 'select' : field.type === 'textarea' ? 'textarea' : 'input');
         input.id = `step-${index}-${field.key}`; label.htmlFor = input.id;
         if (field.type === 'select') for (const [value, title] of field.choices) { const option = el('option', '', title); option.value = value; input.append(option); }
-        else { input.type = field.type; if (field.type === 'number') { input.min = field.min; input.max = field.max; input.step = field.step; } else input.maxLength = 2000; }
+        else if (field.type === 'textarea') { input.maxLength = field.maxLength || 1000000; input.spellcheck = false; }
+        else { input.type = field.type; if (field.type === 'number') { input.min = field.min; input.max = field.max; input.step = field.step; } else input.maxLength = field.maxLength || 2000; }
         input.value = step.options[field.key] ?? field.value;
         input.addEventListener('change', () => { step.options[field.key] = input.value; saveDraft(); });
         container.append(label, input); options.append(container);

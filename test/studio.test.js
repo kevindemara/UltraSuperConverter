@@ -41,7 +41,7 @@ async function upload(name, bytes) {
 test('Main server exposes the original studio and new toolbox', async () => {
   const home = await (await fetch(base)).text(); assert.match(home, /href="\/tools.html"/);
   const toolbox = await (await fetch(`${base}/tools.html`)).text(); assert.match(toolbox, /id="toolForm"/);
-  assert.equal((await (await fetch(`${base}/api/toolbox/catalog`)).json()).tools.length, 50);
+  assert.equal((await (await fetch(`${base}/api/toolbox/catalog`)).json()).tools.length, 100);
   const state = await (await fetch(`${base}/api/state`)).json(); assert.equal(state.engine.sharpVersion, sharp.versions.sharp); assert.ok(state.engine.ffmpegReady);
 });
 test('Runtime validation reflects the new dependency requirement', () => {

@@ -58,10 +58,10 @@ before(async () => {
 });
 after(async () => { if (server) await new Promise(resolve => server.close(resolve)); if (root) await fs.rm(root, { recursive: true, force: true }); });
 
-test('Catalog exposes 50 unique, executable tools including the original 30', async () => {
-  assert.equal(catalog.length, 50); assert.equal(new Set(catalog.map(t => t.id)).size, 50);
+test('Catalog exposes 100 unique tools including all previous conversions', async () => {
+  assert.equal(catalog.length, 100); assert.equal(new Set(catalog.map(t => t.id)).size, 100);
   const response = await fetch(`${base}/catalog`); assert.equal(response.status, 200);
-  assert.equal((await response.json()).tools.length, 50);
+  assert.equal((await response.json()).tools.length, 100);
 });
 test('01 JSON ↔ CSV handles quoted newlines, union of keys, Unicode and formula protection', async () => {
   const result = await run('json-csv', { text: JSON.stringify([{ name: 'Café,\nAda', value: '=1+1' }, { name: 'Lin', extra: { a: 1 } }]) });
@@ -265,4 +265,11 @@ test('Empty binary files round-trip through gzip and HTML-only scripts yield emp
   const compressed = await run('gzip', { files: ['empty.bin'] }); fixture['empty.gz'] = compressed[0].path;
   const restored = await run('gzip', { files: ['empty.gz'], options: { direction: 'Decompress' } }); assert.equal(restored[0].bytes, 0);
   assert.equal(await content(await run('html-text', { text: '<script>alert(1)</script>' })), '');
+});
+test('JSON text requests preserve pasted newlines and exact UTF-8 hash bytes', async () => {
+  const text = 'Hello\nCafé\n';
+  const response = await fetch(`${base}/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ toolId: 'text-hash', text, options: { algorithm: 'sha256' } }) });
+  assert.equal(response.status, 200); const data = await response.json(); const hashes = JSON.parse(data.results[0].preview);
+  assert.equal(hashes.hashes.sha256, crypto.createHash('sha256').update(text, 'utf8').digest('hex')); assert.equal(hashes.bytes, Buffer.byteLength(text));
+  assert.equal((await fetch(`${base}/run`, { method: 'POST', headers: { Origin: 'https://example.com', 'Content-Type': 'application/json' }, body: '{}' })).status, 403);
 });
