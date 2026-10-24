@@ -58,10 +58,10 @@ before(async () => {
 });
 after(async () => { if (server) await new Promise(resolve => server.close(resolve)); if (root) await fs.rm(root, { recursive: true, force: true }); });
 
-test('Catalog exposes exactly 30 unique, executable tools', async () => {
-  assert.equal(catalog.length, 30); assert.equal(new Set(catalog.map(t => t.id)).size, 30);
+test('Catalog exposes 50 unique, executable tools including the original 30', async () => {
+  assert.equal(catalog.length, 50); assert.equal(new Set(catalog.map(t => t.id)).size, 50);
   const response = await fetch(`${base}/catalog`); assert.equal(response.status, 200);
-  assert.equal((await response.json()).tools.length, 30);
+  assert.equal((await response.json()).tools.length, 50);
 });
 test('01 JSON ↔ CSV handles quoted newlines, union of keys, Unicode and formula protection', async () => {
   const result = await run('json-csv', { text: JSON.stringify([{ name: 'Café,\nAda', value: '=1+1' }, { name: 'Lin', extra: { a: 1 } }]) });

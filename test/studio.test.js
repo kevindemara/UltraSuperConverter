@@ -41,13 +41,13 @@ async function upload(name, bytes) {
 test('Main server exposes the original studio and new toolbox', async () => {
   const home = await (await fetch(base)).text(); assert.match(home, /href="\/tools.html"/);
   const toolbox = await (await fetch(`${base}/tools.html`)).text(); assert.match(toolbox, /id="toolForm"/);
-  assert.equal((await (await fetch(`${base}/api/toolbox/catalog`)).json()).tools.length, 30);
+  assert.equal((await (await fetch(`${base}/api/toolbox/catalog`)).json()).tools.length, 50);
   const state = await (await fetch(`${base}/api/state`)).json(); assert.equal(state.engine.sharpVersion, sharp.versions.sharp); assert.ok(state.engine.ffmpegReady);
 });
 test('Runtime validation reflects the new dependency requirement', () => {
   const { isSupported } = require('../lib/runtime');
   assert.equal(isSupported('18.20.0'), false); assert.equal(isSupported('20.18.9'), false);
-  assert.equal(isSupported('20.19.0'), true); assert.equal(isSupported('v24.19.0'), true); assert.equal(isSupported('unknown'), false);
+  assert.equal(isSupported('20.19.0'), false); assert.equal(isSupported('22.12.9'), false); assert.equal(isSupported('22.13.0'), true); assert.equal(isSupported('v24.19.0'), true); assert.equal(isSupported('unknown'), false);
 });
 test('Existing image studio converts real images through upload, process and download', async () => {
   const png = await sharp({ create: { width: 120, height: 80, channels: 4, background: '#3564ab88' } }).png().toBuffer();

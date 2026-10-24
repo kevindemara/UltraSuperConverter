@@ -46,6 +46,9 @@ try {
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use('/api/toolbox', require('./lib/toolbox-routes')(DATA_DIR));
+const workspaceRouter = require('./lib/workspace-routes')(DATA_DIR);
+process.once('exit', () => workspaceRouter.store.releaseLock());
+app.use('/api/workspace', workspaceRouter);
 app.use(express.static(PUBLIC_DIR));
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use('/outputs', express.static(OUTPUTS_DIR));
@@ -1930,6 +1933,7 @@ app.post('/api/update/apply', async (req, res) => {
 
 // Stop instance / Shutdown server from GUI or stop.cmd
 app.post('/api/shutdown', (req, res) => {
+  workspaceRouter.store.close();
   broadcastEvent('system-shutdown', { message: 'UltraSuperConvertor Engine shutting down...' });
   res.json({ status: 'shutting_down', pid: process.pid });
 
@@ -1942,7 +1946,7 @@ app.post('/api/shutdown', (req, res) => {
   }, 400);
 });
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '127.0.0.1', () => {
   console.log('================================================================');
   console.log(`  ULTRASUPERCONVERTOR // QUANTUM MEDIA ENGINE ONLINE`);
   console.log(`  GUI URL  : http://localhost:${server.address().port}`);
@@ -1951,6 +1955,7 @@ const server = app.listen(PORT, () => {
 });
 
 process.on('SIGINT', () => {
+  workspaceRouter.store.close();
   try {
     if (fs.existsSync(PID_FILE)) fs.unlinkSync(PID_FILE);
   } catch (_) {}

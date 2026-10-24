@@ -1,6 +1,7 @@
 node_modules/
 .server.pid
 .toolbox-results/
+.workspace-data/
 uploads/*
 !uploads/.gitkeep
 outputs/*

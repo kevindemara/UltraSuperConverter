@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const tools = window.CONVERTER_TOOLS;
+  const tools = [...window.CONVERTER_TOOLS, ...window.ADVANCED_TOOLS];
   const $ = id => document.getElementById(id);
   let selected;
   let files = [];
@@ -40,6 +40,7 @@
     $('toolGroup').textContent = selected.group.toUpperCase();
     $('toolName').textContent = selected.name;
     $('toolDescription').textContent = selected.description;
+    $('openInWorkspace').href = `/workspace.html#${selected.id}`;
     $('sourceLabel').textContent = selected.input === 'text' ? 'TEXT OR FILE' : selected.input === 'multi' ? 'FILES IN ORDER' : 'YOUR FILE';
     $('targetLabel').textContent = selected.group === 'PDF' && selected.id !== 'pdf-metadata' ? 'PDF DOCUMENT' : 'CONVERTED FILE';
     $('toolFiles').accept = selected.accept === '*' ? '' : selected.accept;

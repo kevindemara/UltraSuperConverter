@@ -10,7 +10,47 @@
 
 ---
 
-## New in v3.0 — the all-in-one Toolbox
+## New in v4.0 — background workspace and 20 advanced tools
+
+Open **Workspace** in the header or visit [`http://localhost:3847/workspace.html`](http://localhost:3847/workspace.html). This release adds **30 larger features**: ten workflow capabilities and twenty advanced tools, bringing the Toolbox to **50 tools**. The complete second-round checklist is in [FEATURES-60.md](FEATURES-60.md).
+
+The Workspace provides:
+
+- A persistent file library with SHA-256 fingerprints, folder imports, search, and input ordering.
+- Saved recipes with up to eight ordered conversion steps, per-step filename filters, import/export, and rename/delete controls.
+- A background queue with stage progress, running/queued cancellation, retry, persistent history, and restart recovery.
+- Per-file batch recipes that continue past failed inputs and report partial successes.
+- Output naming templates, collision handling, individual downloads, and ZIP bundles containing a conversion report and checksums.
+
+The twenty new tools cover ZIP inspection/extraction; PDF page rendering, text extraction, watermarks, page numbering, N-up print layouts, and logo stamps; Word extraction and Markdown-to-Word; spreadsheet conversion, cleanup and workbook merging; photo proof sheets, responsive image packs and sprite atlases; video assembly with crossfades, video grids and photo slideshows; multitrack audio mixing/ducking and podcast mastering with loudness reports.
+
+### Run a conversion flow
+
+1. Import files or a folder into the library, or load a text tool's example.
+2. Select source files in the library and arrange them in the required order.
+3. Choose conversion steps. Every later step consumes files from the prior step; use a filter such as `*.json` to select particular outputs. Only the last step's outputs are retained.
+4. Enable **Run separately for each file** for a batch, or leave it off for a combined operation such as merging or mixing.
+5. Save the recipe if desired, then **Add to background queue**. Review progress, results and errors under **Job history**.
+
+Closing the page leaves jobs running while the local Node server stays on. Stopping the server interrupts active jobs; they can be retried after restarting. Pending jobs resume automatically. Workspace library files and job outputs remain until you remove them. Source files outside the library are never modified.
+
+**Runtime:** Node.js **22.13 or newer** is required by the PDF renderer. Install dependencies with `npm install`, then run `npm start`. The server binds to loopback (`127.0.0.1`); the private Workspace API rejects foreign browser origins and non-local hostnames.
+
+**Limits:** Library: 2 GB total and 100 MB per file. A combined job accepts up to 20 source files; a per-file batch accepts up to 200, with 500 MB total input per job. Recipes support eight steps. One workspace job runs at a time, with a 20-minute overall deadline; each advanced FFmpeg operation has a 10-minute deadline. The synchronous Toolbox still supports two concurrent requests and its existing 24-hour result retention.
+
+PDF rendering supports up to 40 selected pages at 72–200 DPI, at most 20 megapixels per page. PDF text extraction reads embedded selectable text, without OCR. DOCX extraction preserves semantic content rather than Word page layout. Spreadsheet tools handle XLSX/CSV/JSON, export cached formula results and do not recalculate formulas. Spreadsheet cleanup creates a values-only workbook; workbook merging copies values and styles, not charts or macros. ZIP entries are validated and limited to 200 MB expanded. All processing stays local; no external document or AI services are used.
+
+**Storage:** `.workspace-data/` contains library copies, recipe/job state and job outputs, and is excluded from Git. `USC_DATA_DIR` relocates this storage together with media uploads/outputs. The browser keeps an editable recipe draft locally; saved recipes and jobs live on the server.
+
+**Workspace API:** `GET /api/workspace/state`; multipart `POST /api/workspace/assets` with `files` and an optional JSON `paths` array; `POST/PUT/DELETE /api/workspace/recipes[/:id]`; `POST /api/workspace/jobs` with `recipe`, `assetIds`, optional `text` and `name`; `POST /api/workspace/jobs/:id/cancel` or `/retry`; and job result `/download/:name`, `/report` and `/zip` endpoints. Recipe steps use `{ toolId, options, select: "*" }`. Recipe JSON import/export is available through the interface.
+
+**Verification:** `npm test` runs the original media regressions and all 60 feature checks, including real Word/XLSX/PDF/image/video/audio files, worker cancellation, pipeline execution, partial batches, persistence, naming and ZIP reports. `npm audit` reports zero vulnerabilities for the release dependency set.
+
+Baseline checkpoint: `checkpoint/pre-large-expansion-2026-10-24`. Completion checkpoint: `checkpoint/large-expansion-complete-2026-10-24`.
+
+---
+
+## v3.0 — the original 30-tool Toolbox
 
 Open **Toolbox · 30 tools** in the header, or visit [`http://localhost:3847/tools.html`](http://localhost:3847/tools.html). The media studio remains available for image, video, and audio format conversion and compression.
 
