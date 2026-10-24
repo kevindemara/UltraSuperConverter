@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ULTRASUPERCONVERTOR // FRONTEND APPLICATION CONTROLLER
+   ULTRASUPERCONVERTER // FRONTEND APPLICATION CONTROLLER
    ========================================================================== */
 
 (() => {
@@ -1198,7 +1198,7 @@
         updateStatusBadge.style.color = '#00d2ff';
       }
       if (updateStatusBanner) {
-        updateStatusBanner.innerHTML = 'Checking <code>kevindemara/UltraSuperConvertor</code> on GitHub for new releases or updates...';
+        updateStatusBanner.innerHTML = 'Checking <code>kevindemara/UltraSuperConverter</code> on GitHub for new releases or updates...';
         updateStatusBanner.style.background = '#f8fafc';
         updateStatusBanner.style.borderColor = 'rgba(9,13,22,0.14)';
       }
@@ -1246,7 +1246,7 @@
           updateStatusBanner.style.background = '#f8fafc';
           updateStatusBanner.style.borderColor = 'rgba(9,13,22,0.14)';
           updateStatusBanner.innerHTML = `
-            <strong style="color:#059669;display:block;margin-bottom:4px;">UltraSuperConvertor is up to date!</strong>
+            <strong style="color:#059669;display:block;margin-bottom:4px;">UltraSuperConverter is up to date!</strong>
             <div style="font-size:0.8rem;color:#475569;">
               Running latest version <code>${escapeHtml(localLabel)}</code>${data.latestMessage ? ` — <em>"${escapeHtml(data.latestMessage)}"</em>` : ''}
             </div>
@@ -1282,7 +1282,7 @@
     if (sp) sp.textContent = 'Updating from GitHub...';
     if (updateTerminalLog) {
       updateTerminalLog.hidden = false;
-      updateTerminalLog.textContent = '[Updater] Downloading and applying latest code from GitHub (kevindemara/UltraSuperConvertor)...\n';
+      updateTerminalLog.textContent = '[Updater] Downloading and applying latest code from GitHub (kevindemara/UltraSuperConverter)...\n';
     }
 
     try {
@@ -2033,7 +2033,7 @@
       wmState.x = parseFloat(btn.dataset.x);
       wmState.y = parseFloat(btn.dataset.y);
       if (!studioWmText.value.trim()) {
-        studioWmText.value = 'ULTRASUPERCONVERTOR';
+        studioWmText.value = 'ULTRASUPERCONVERTER';
       }
       renderCanvasWatermark();
     });

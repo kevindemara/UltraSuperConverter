@@ -4,7 +4,7 @@ const fs = require('fs');
 const os = require('os');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const ICO_PATH = path.join(ROOT_DIR, 'UltraSuperConvertor.ico');
+const ICO_PATH = path.join(ROOT_DIR, 'UltraSuperConverter.ico');
 const SILENT_VBS = path.join(ROOT_DIR, 'bin', 'silent.vbs');
 const CLI_CMD = path.join(ROOT_DIR, 'bin', 'cli-send.cmd');
 const CSCRIPT_EXE = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cscript.exe');
@@ -16,6 +16,10 @@ function getSendToDir() {
 }
 
 function getSendToLnkPath() {
+  return path.join(getSendToDir(), 'UltraSuperConverter.lnk');
+}
+
+function getLegacySendToLnkPath() {
   return path.join(getSendToDir(), 'UltraSuperConvertor.lnk');
 }
 
@@ -29,12 +33,13 @@ function runReg(args) {
 }
 
 function isContextMenuInstalled() {
+  // Keep the original registry identifier so upgrades update existing Explorer entries.
   const res = runReg(['query', 'HKCU\\Software\\Classes\\*\\shell\\UltraSuperConvertor']);
   return res.ok;
 }
 
 function isSendToInstalled() {
-  return fs.existsSync(getSendToLnkPath());
+  return fs.existsSync(getSendToLnkPath()) || fs.existsSync(getLegacySendToLnkPath());
 }
 
 function vbsStr(str) {
@@ -49,17 +54,17 @@ function installContextMenu({ contextMenu = true, sendTo = true } = {}) {
     const bgCmdStr = `"${WSCRIPT_EXE}" "${SILENT_VBS}" "${CLI_CMD}" "%V"`;
 
     // 1. All files
-    runReg(['add', 'HKCU\\Software\\Classes\\*\\shell\\UltraSuperConvertor', '/ve', '/d', 'Convert with UltraSuperConvertor', '/f']);
+    runReg(['add', 'HKCU\\Software\\Classes\\*\\shell\\UltraSuperConvertor', '/ve', '/d', 'Convert with UltraSuperConverter', '/f']);
     runReg(['add', 'HKCU\\Software\\Classes\\*\\shell\\UltraSuperConvertor', '/v', 'Icon', '/d', ICO_PATH, '/f']);
     runReg(['add', 'HKCU\\Software\\Classes\\*\\shell\\UltraSuperConvertor\\command', '/ve', '/d', cmdStr, '/f']);
 
     // 2. Directories (folders)
-    runReg(['add', 'HKCU\\Software\\Classes\\Directory\\shell\\UltraSuperConvertor', '/ve', '/d', 'Convert with UltraSuperConvertor', '/f']);
+    runReg(['add', 'HKCU\\Software\\Classes\\Directory\\shell\\UltraSuperConvertor', '/ve', '/d', 'Convert with UltraSuperConverter', '/f']);
     runReg(['add', 'HKCU\\Software\\Classes\\Directory\\shell\\UltraSuperConvertor', '/v', 'Icon', '/d', ICO_PATH, '/f']);
     runReg(['add', 'HKCU\\Software\\Classes\\Directory\\shell\\UltraSuperConvertor\\command', '/ve', '/d', cmdStr, '/f']);
 
     // 3. Directory Background (inside folders)
-    runReg(['add', 'HKCU\\Software\\Classes\\Directory\\Background\\shell\\UltraSuperConvertor', '/ve', '/d', 'Convert with UltraSuperConvertor', '/f']);
+    runReg(['add', 'HKCU\\Software\\Classes\\Directory\\Background\\shell\\UltraSuperConvertor', '/ve', '/d', 'Convert with UltraSuperConverter', '/f']);
     runReg(['add', 'HKCU\\Software\\Classes\\Directory\\Background\\shell\\UltraSuperConvertor', '/v', 'Icon', '/d', ICO_PATH, '/f']);
     runReg(['add', 'HKCU\\Software\\Classes\\Directory\\Background\\shell\\UltraSuperConvertor\\command', '/ve', '/d', bgCmdStr, '/f']);
 
@@ -70,13 +75,16 @@ function installContextMenu({ contextMenu = true, sendTo = true } = {}) {
     const sendToDir = getSendToDir();
     if (fs.existsSync(sendToDir)) {
       const lnkPath = getSendToLnkPath();
+      if (!fs.existsSync(lnkPath) && fs.existsSync(getLegacySendToLnkPath())) {
+        fs.renameSync(getLegacySendToLnkPath(), lnkPath);
+      }
       const vbsScript = [
         'Set WshShell = CreateObject("WScript.Shell")',
         `Set Shortcut = WshShell.CreateShortcut(${vbsStr(lnkPath)})`,
         `Shortcut.TargetPath = ${vbsStr(WSCRIPT_EXE)}`,
         `Shortcut.Arguments = ${vbsStr(`"${SILENT_VBS}" "${CLI_CMD}"`)}`,
         `Shortcut.WorkingDirectory = ${vbsStr(ROOT_DIR)}`,
-        `Shortcut.Description = "Convert with UltraSuperConvertor"`,
+        `Shortcut.Description = "Convert with UltraSuperConverter"`,
         `Shortcut.IconLocation = ${vbsStr(`${ICO_PATH},0`)}`,
         'Shortcut.Save()'
       ].join('\r\n');
@@ -102,9 +110,10 @@ function uninstallContextMenu() {
   runReg(['delete', 'HKCU\\Software\\Classes\\Directory\\shell\\UltraSuperConvertor', '/f']);
   runReg(['delete', 'HKCU\\Software\\Classes\\Directory\\Background\\shell\\UltraSuperConvertor', '/f']);
 
-  const lnkPath = getSendToLnkPath();
-  if (fs.existsSync(lnkPath)) {
-    try { fs.unlinkSync(lnkPath); } catch (_) {}
+  for (const lnkPath of [getSendToLnkPath(), getLegacySendToLnkPath()]) {
+    if (fs.existsSync(lnkPath)) {
+      try { fs.unlinkSync(lnkPath); } catch (_) {}
+    }
   }
 
   return {
@@ -117,11 +126,11 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   if (args.includes('--uninstall') || args.includes('-u')) {
     const res = uninstallContextMenu();
-    console.log('[OK] UltraSuperConvertor context menu and SendTo shortcut removed successfully.');
+    console.log('[OK] UltraSuperConverter context menu and SendTo shortcut removed successfully.');
   } else {
     const res = installContextMenu();
-    console.log('[OK] UltraSuperConvertor context menu registered:', res.contextMenu);
-    console.log('[OK] UltraSuperConvertor SendTo shortcut created:', res.sendTo);
+    console.log('[OK] UltraSuperConverter context menu registered:', res.contextMenu);
+    console.log('[OK] UltraSuperConverter SendTo shortcut created:', res.sendTo);
   }
 }
 

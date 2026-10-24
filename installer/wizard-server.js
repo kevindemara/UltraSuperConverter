@@ -1,5 +1,5 @@
 /**
- * UltraSuperConvertor — Zero-Dependency HTML Setup Wizard Bootstrapper
+ * UltraSuperConverter — Zero-Dependency HTML Setup Wizard Bootstrapper
  * Uses ONLY built-in Node.js modules (http, fs, path, os, child_process)
  * so the HTML Setup Wizard opens and installs dependencies even on a fresh git clone
  * before `npm install` has ever been run.
@@ -44,7 +44,7 @@ function getPreflightStatus() {
     ffmpegReady = Boolean(ffmpegPath && fs.existsSync(ffmpegPath));
   } catch (_) {}
 
-  const desktopShortcut = path.join(os.homedir(), 'Desktop', 'UltraSuperConvertor.lnk');
+  const desktopShortcut = path.join(os.homedir(), 'Desktop', 'UltraSuperConverter.lnk');
   return {
     pid: process.pid,
     bootstrapper: true,
@@ -126,17 +126,17 @@ const server = http.createServer(async (req, res) => {
       } catch (_) {}
 
       const startCmdPath = path.join(ROOT_DIR, 'start.cmd');
-      const icoPath = path.join(ROOT_DIR, 'UltraSuperConvertor.ico');
+      const icoPath = path.join(ROOT_DIR, 'UltraSuperConverter.ico');
       const created = [];
       const psCommands = ['$WshShell = New-Object -ComObject WScript.Shell'];
 
       if (opts.desktop !== false) {
         psCommands.push(`
           $DesktopDir = [Environment]::GetFolderPath('Desktop')
-          $Shortcut = $WshShell.CreateShortcut((Join-Path $DesktopDir 'UltraSuperConvertor.lnk'))
+          $Shortcut = $WshShell.CreateShortcut((Join-Path $DesktopDir 'UltraSuperConverter.lnk'))
           $Shortcut.TargetPath = '${startCmdPath.replace(/'/g, "''")}'
           $Shortcut.WorkingDirectory = '${ROOT_DIR.replace(/'/g, "''")}'
-          $Shortcut.Description = 'Launch UltraSuperConvertor Quantum Media Engine'
+          $Shortcut.Description = 'Launch UltraSuperConverter Quantum Media Engine'
           $Shortcut.IconLocation = '${icoPath.replace(/'/g, "''")},0'
           $Shortcut.WindowStyle = 7
           $Shortcut.Save()
@@ -147,10 +147,10 @@ const server = http.createServer(async (req, res) => {
       if (opts.startMenu !== false) {
         psCommands.push(`
           $ProgramsDir = [Environment]::GetFolderPath('Programs')
-          $ShortcutSM = $WshShell.CreateShortcut((Join-Path $ProgramsDir 'UltraSuperConvertor.lnk'))
+          $ShortcutSM = $WshShell.CreateShortcut((Join-Path $ProgramsDir 'UltraSuperConverter.lnk'))
           $ShortcutSM.TargetPath = '${startCmdPath.replace(/'/g, "''")}'
           $ShortcutSM.WorkingDirectory = '${ROOT_DIR.replace(/'/g, "''")}'
-          $ShortcutSM.Description = 'Launch UltraSuperConvertor Quantum Media Engine'
+          $ShortcutSM.Description = 'Launch UltraSuperConverter Quantum Media Engine'
           $ShortcutSM.IconLocation = '${icoPath.replace(/'/g, "''")},0'
           $ShortcutSM.WindowStyle = 7
           $ShortcutSM.Save()
@@ -176,12 +176,12 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // If user clicks "OPEN ULTRASUPERCONVERTOR STUDIO" (/), hand off to full server.js if dependencies are installed
+  // If user clicks "OPEN ULTRASUPERCONVERTER STUDIO" (/), hand off to full server.js if dependencies are installed
   if (urlPath === '/') {
     const expressPath = path.join(ROOT_DIR, 'node_modules', 'express');
     if (fs.existsSync(expressPath)) {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="1;url=http://localhost:${PORT}/" /><style>body{font-family:sans-serif;display:grid;place-items:center;height:100vh;background:#f4f7fb;color:#090d16}</style></head><body><h2>Starting UltraSuperConvertor Quantum Core...</h2></body></html>`);
+      res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="1;url=http://localhost:${PORT}/" /><style>body{font-family:sans-serif;display:grid;place-items:center;height:100vh;background:#f4f7fb;color:#090d16}</style></head><body><h2>Starting UltraSuperConverter Quantum Core...</h2></body></html>`);
       setTimeout(() => {
         server.close(() => {
           spawn(process.execPath, [path.join(ROOT_DIR, 'server.js')], {

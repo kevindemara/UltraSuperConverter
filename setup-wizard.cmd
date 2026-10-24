@@ -1,11 +1,11 @@
 @echo off
 setlocal EnableDelayedExpansion
-title UltraSuperConvertor // HTML Setup & Shortcut Wizard
+title UltraSuperConverter // HTML Setup & Shortcut Wizard
 cd /d "%~dp0"
 
 echo.
 echo  ====================================================================
-echo   ULTRASUPERCONVERTOR // HTML SETUP ^& DESKTOP SHORTCUT WIZARD
+echo   ULTRASUPERCONVERTER // HTML SETUP ^& DESKTOP SHORTCUT WIZARD
 echo  ====================================================================
 echo.
 
@@ -61,11 +61,11 @@ if defined PORT_PID (
 )
 
 if exist "node_modules\express\index.js" (
-    echo  [+] Starting UltraSuperConvertor Local Engine...
-    start "UltraSuperConvertor Server" /min cmd /c "node server.js"
+    echo  [+] Starting UltraSuperConverter Local Engine...
+    start "UltraSuperConverter Server" /min cmd /c "node server.js"
 ) else (
     echo  [+] Starting Zero-Dependency HTML Setup Wizard Bootstrapper...
-    start "UltraSuperConvertor Wizard" /min cmd /c "node installer\wizard-server.js"
+    start "UltraSuperConverter Wizard" /min cmd /c "node installer\wizard-server.js"
 )
 
 ping 127.0.0.1 -n 3 >nul

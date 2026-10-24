@@ -80,7 +80,7 @@
     const state = preferences.state, query = $('toolSearch').value.trim(), category = library.categories.find(c => c.id === libraryView);
     const matches = library.selectTools(tools, { view: libraryView, query, sort: state.sort }, state);
     $('directoryTitle').textContent = query ? 'Search results' : category?.name || { all: 'All tools', favorites: 'Favorites', recent: 'Recently used' }[libraryView];
-    if (!$('toolDirectory').hidden) document.title = `${$('directoryTitle').textContent} — UltraSuperConvertor`;
+    if (!$('toolDirectory').hidden) document.title = `${$('directoryTitle').textContent} — UltraSuperConverter`;
     $('directoryDescription').textContent = query ? 'Search across every category by tool, format, or task.' : category?.description || { all: 'Search, choose a category, or favorite the tools you use most.', favorites: 'Your saved tools, ready whenever you need them.', recent: 'Your last 12 successfully used tools. Only tool names are remembered.' }[libraryView];
     $('toolCount').textContent = `${matches.length} ${matches.length === 1 ? 'tool' : 'tools'}${query ? ' found' : libraryView === 'all' ? ' in 10 categories' : ''}`;
     $('clearRecent').hidden = libraryView !== 'recent' || !!query || !state.recent.length;
@@ -108,14 +108,14 @@
   }
   function showDirectory(view = 'all', focus = true) {
     libraryView = view; $('workbench').hidden = true; $('toolDirectory').hidden = false; renderCatalog();
-    document.title = `${$('directoryTitle').textContent} — UltraSuperConvertor`;
+    document.title = `${$('directoryTitle').textContent} — UltraSuperConverter`;
     if (focus) { window.scrollTo({ top: 0 }); $('directoryTitle').focus({ preventScroll: true }); }
   }
   function showWorkbench() {
     $('toolDirectory').hidden = true; $('workbench').hidden = false;
     const category = library.categoryOf(selected); $('currentToolIcon').className = `current-tool-icon category-${category.id}`; $('currentToolIcon').replaceChildren(icon(library.metadata[selected.id].icon));
     updateCurrentFavorite(); renderNavigation(); window.scrollTo({ top: 0 }); $('toolName').focus({ preventScroll: true });
-    document.title = `${selected.name} — UltraSuperConvertor`;
+    document.title = `${selected.name} — UltraSuperConverter`;
   }
   function chooseTool(id) {
     if (busy) return;
@@ -184,7 +184,7 @@
     updateTextStats();
     renderCatalog();
     showWorkbench();
-    document.title = `${selected.name} — UltraSuperConvertor`;
+    document.title = `${selected.name} — UltraSuperConverter`;
   }
   function renderFiles() {
     $('fileList').replaceChildren();
@@ -335,7 +335,7 @@
       preferences.recordUse(selected.id);
       $('runStatus').textContent = 'Done. Your downloads are ready below.';
     } catch (error) {
-      showError(error.message === 'Failed to fetch' ? 'Cannot reach the local server. Start UltraSuperConvertor and try again.' : error.message);
+      showError(error.message === 'Failed to fetch' ? 'Cannot reach the local server. Start UltraSuperConverter and try again.' : error.message);
       $('runStatus').textContent = 'Update your input or settings and try again.';
     } finally { setBusy(false); }
   });

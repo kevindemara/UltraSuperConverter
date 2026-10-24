@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
-title UltraSuperConvertor // Instance Stopper
+title UltraSuperConverter // Instance Stopper
 
 echo ================================================================
-echo   ULTRASUPERCONVERTOR // STOPPING SERVER INSTANCE
+echo   ULTRASUPERCONVERTER // STOPPING SERVER INSTANCE
 echo ================================================================
 
 :: 1. Request graceful API shutdown
@@ -27,5 +27,5 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":3847" ^| findstr "LISTENING
     taskkill /F /PID %%a >nul 2>&1
 )
 
-echo [OK] UltraSuperConvertor instance has been completely stopped.
+echo [OK] UltraSuperConverter instance has been completely stopped.
 exit /b 0

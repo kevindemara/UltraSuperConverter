@@ -5,7 +5,8 @@ param(
 )
 
 $AppPath = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$IcoPath = Join-Path $AppPath "UltraSuperConvertor.ico"
+# Keep the original registry identifier so upgrades update existing Explorer entries.
+$IcoPath = Join-Path $AppPath "UltraSuperConverter.ico"
 $SilentVbs = Join-Path $AppPath "bin\silent.vbs"
 $CliCmd = Join-Path $AppPath "bin\cli-send.cmd"
 $WscriptExe = "$env:SystemRoot\System32\wscript.exe"
@@ -20,30 +21,30 @@ if ($Uninstall) {
 
     $SendToDir = [Environment]::GetFolderPath('SendTo')
     if (Test-Path $SendToDir) {
-        Remove-Item -Path (Join-Path $SendToDir "UltraSuperConvertor.lnk") -ErrorAction SilentlyContinue
+        Remove-Item -Path (Join-Path $SendToDir "UltraSuperConverter.lnk") -ErrorAction SilentlyContinue
     }
-    Write-Host "[OK] UltraSuperConvertor context menu and SendTo shortcut removed."
+    Write-Host "[OK] UltraSuperConverter context menu and SendTo shortcut removed."
     return
 }
 
 if (-not $NoContextMenu) {
     # All files
     New-Item -Path "HKCU:\Software\Classes\*\shell\UltraSuperConvertor" -Force | Out-Null
-    Set-ItemProperty -Path "HKCU:\Software\Classes\*\shell\UltraSuperConvertor" -Name "(Default)" -Value "Convert with UltraSuperConvertor"
+    Set-ItemProperty -Path "HKCU:\Software\Classes\*\shell\UltraSuperConvertor" -Name "(Default)" -Value "Convert with UltraSuperConverter"
     Set-ItemProperty -Path "HKCU:\Software\Classes\*\shell\UltraSuperConvertor" -Name "Icon" -Value "$IcoPath"
     New-Item -Path "HKCU:\Software\Classes\*\shell\UltraSuperConvertor\command" -Force | Out-Null
     Set-ItemProperty -Path "HKCU:\Software\Classes\*\shell\UltraSuperConvertor\command" -Name "(Default)" -Value $Command
 
     # Directories
     New-Item -Path "HKCU:\Software\Classes\Directory\shell\UltraSuperConvertor" -Force | Out-Null
-    Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\shell\UltraSuperConvertor" -Name "(Default)" -Value "Convert with UltraSuperConvertor"
+    Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\shell\UltraSuperConvertor" -Name "(Default)" -Value "Convert with UltraSuperConverter"
     Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\shell\UltraSuperConvertor" -Name "Icon" -Value "$IcoPath"
     New-Item -Path "HKCU:\Software\Classes\Directory\shell\UltraSuperConvertor\command" -Force | Out-Null
     Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\shell\UltraSuperConvertor\command" -Name "(Default)" -Value $Command
 
     # Directory Background
     New-Item -Path "HKCU:\Software\Classes\Directory\Background\shell\UltraSuperConvertor" -Force | Out-Null
-    Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\Background\shell\UltraSuperConvertor" -Name "(Default)" -Value "Convert with UltraSuperConvertor"
+    Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\Background\shell\UltraSuperConvertor" -Name "(Default)" -Value "Convert with UltraSuperConverter"
     Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\Background\shell\UltraSuperConvertor" -Name "Icon" -Value "$IcoPath"
     New-Item -Path "HKCU:\Software\Classes\Directory\Background\shell\UltraSuperConvertor\command" -Force | Out-Null
     Set-ItemProperty -Path "HKCU:\Software\Classes\Directory\Background\shell\UltraSuperConvertor\command" -Name "(Default)" -Value $BgCommand
@@ -55,11 +56,11 @@ if (-not $NoSendTo) {
     $SendToDir = [Environment]::GetFolderPath('SendTo')
     if (Test-Path $SendToDir) {
         $WshShell = New-Object -ComObject WScript.Shell
-        $Shortcut = $WshShell.CreateShortcut((Join-Path $SendToDir "UltraSuperConvertor.lnk"))
+        $Shortcut = $WshShell.CreateShortcut((Join-Path $SendToDir "UltraSuperConverter.lnk"))
         $Shortcut.TargetPath = $WscriptExe
         $Shortcut.Arguments = "`"$SilentVbs`" `"$CliCmd`""
         $Shortcut.WorkingDirectory = $AppPath
-        $Shortcut.Description = "Convert with UltraSuperConvertor"
+        $Shortcut.Description = "Convert with UltraSuperConverter"
         $Shortcut.IconLocation = "$IcoPath,0"
         $Shortcut.Save()
         Write-Host "[OK] Shortcut created in Windows 'Send to' menu."

@@ -68,7 +68,7 @@ async function main() {
 
   const online = await ensureServerRunning();
   if (!online) {
-    console.error('UltraSuperConvertor server could not be started.');
+    console.error('UltraSuperConverter server could not be started.');
     process.exit(1);
   }
 
@@ -88,7 +88,7 @@ async function main() {
       exec(`start "" "${BASE_URL}"`);
     }
   } catch (err) {
-    console.error('Failed to send paths to UltraSuperConvertor:', err.message);
+    console.error('Failed to send paths to UltraSuperConverter:', err.message);
     exec(`start "" "${BASE_URL}"`);
   }
 }

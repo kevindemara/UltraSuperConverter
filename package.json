@@ -1,6 +1,6 @@
 {
-  "name": "ultra-super-convertor",
-  "version": "5.1.0",
+  "name": "ultra-super-converter",
+  "version": "5.1.1",
   "description": "100 local text, PDF, code, crypto, document, image and media tools with persistent conversion workflows",
   "engines": {
     "node": ">=22.13.0"

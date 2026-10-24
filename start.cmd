@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
-title UltraSuperConvertor // Launcher
+title UltraSuperConverter // Launcher
 
 echo ================================================================
-echo   ULTRASUPERCONVERTOR // QUANTUM MEDIA ENGINE LAUNCHER
+echo   ULTRASUPERCONVERTER // QUANTUM MEDIA ENGINE LAUNCHER
 echo ================================================================
 
 where node >nul 2>nul
@@ -20,7 +20,7 @@ if %errorlevel% neq 0 (
 
 node -e "require('./lib/runtime').assertSupported()"
 if %errorlevel% neq 0 (
-    echo [ERROR] Install current Node.js LTS, then reopen UltraSuperConvertor.
+    echo [ERROR] Install current Node.js LTS, then reopen UltraSuperConverter.
     pause
     exit /b 1
 )
@@ -34,13 +34,13 @@ if not exist "node_modules\" (
 :: Check if already running on port 3847
 curl.exe -s -o nul http://localhost:3847/api/state
 if !ERRORLEVEL! EQU 0 (
-    echo [INFO] UltraSuperConvertor is already running on http://localhost:3847
+    echo [INFO] UltraSuperConverter is already running on http://localhost:3847
     start "" "http://localhost:3847"
     exit /b 0
 )
 
-echo [INFO] Starting UltraSuperConvertor background engine on port 3847...
-start "UltraSuperConvertor Engine" /min cmd /c "node server.js"
+echo [INFO] Starting UltraSuperConverter background engine on port 3847...
+start "UltraSuperConverter Engine" /min cmd /c "node server.js"
 
 :: Wait briefly for server to bind port 3847
 set /a retries=0

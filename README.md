@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="public/assets/logo-opt.png" alt="UltraSuperConvertor Logo" width="96" height="96" />
+  <img src="public/assets/logo-opt.png" alt="UltraSuperConverter Logo" width="96" height="96" />
   <br />
-  <img src="public/assets/wordmark.png" alt="ULTRA SUPER CONVERTOR" height="44" />
+  <img src="public/assets/wordmark.png" alt="ULTRA SUPER CONVERTER" height="44" />
   <p><strong>Fast, Modern Local Media Converter &amp; Compressor</strong></p>
   <p>
     <code>Sharp (libvips)</code> &bull; <code>HEIC / HEIF Support</code> &bull; <code>FFmpeg Static</code> &bull; <code>100% Local &amp; Private</code> &bull; <code>100-Tool Toolbox</code>
@@ -9,6 +9,8 @@
 </div>
 
 ---
+
+[GitHub repository](https://github.com/kevindemara/UltraSuperConverter)
 
 ## New in v5.1 — organized tool library
 
@@ -127,7 +129,7 @@ Toolbox limits: 100 MB per input file, 20 files/500 MB per batch, 10 MB text inp
 
 ## Overview
 
-**UltraSuperConvertor** is a self-contained, local browser-based media compression, format conversion, resizing, and editing app for **Images (including Apple `.heic` / `.heif`), Videos, and Audio**.
+**UltraSuperConverter** is a self-contained, local browser-based media compression, format conversion, resizing, and editing app for **Images (including Apple `.heic` / `.heif`), Videos, and Audio**.
 
 Every operation executes **100% locally on your machine** using **Sharp (`libvips` 8.18)**, **`heic-convert`**, and **bundled static FFmpeg + FFprobe** binaries—with zero external cloud uploads and zero subscriptions. Media studio uploads support up to 2 GB per file; Toolbox limits are listed above.
 
@@ -135,15 +137,15 @@ Every operation executes **100% locally on your machine** using **Sharp (`libvip
 
 ## 1. Easy Installation (HTML Setup & Desktop Icon Wizard — No `.exe` Required)
 
-UltraSuperConvertor uses an **HTML Setup & Desktop Shortcut Wizard** (`setup-wizard.html` + `setup-wizard.cmd`) so you never have to deal with unsigned `.exe` installers, Windows SmartScreen blocks, or code-signing certificates.
+UltraSuperConverter uses an **HTML Setup & Desktop Shortcut Wizard** (`setup-wizard.html` + `setup-wizard.cmd`) so you never have to deal with unsigned `.exe` installers, Windows SmartScreen blocks, or code-signing certificates.
 
 ### Option A: Launch the HTML Setup Wizard
 1. Double-click **`setup-wizard.cmd`** in the project root (or open `http://localhost:3847/setup` / `setup-wizard.html` in your browser).
 2. Walk through the **4-Step Interactive Browser Wizard**:
-   - **Step 01 — Pre-Flight Scan**: Automatically detects your local **Node.js runtime**, **Sharp (`libvips`)** image core, **FFmpeg + FFprobe** static binaries, and **`UltraSuperConvertor.ico`** desktop icon asset.
+   - **Step 01 — Pre-Flight Scan**: Automatically detects your local **Node.js runtime**, **Sharp (`libvips`)** image core, **FFmpeg + FFprobe** static binaries, and **`UltraSuperConverter.ico`** desktop icon asset.
    - **Step 02 — Install & Verify Packages**: One-click button (`⚡ VERIFY & INSTALL PACKAGES`) runs `npm install`, verifies the static FFmpeg binary, and initializes the `uploads/` and `outputs/` workspace directories. *(Even on a brand-new Git clone before `node_modules` exists, `setup-wizard.cmd` boots a zero-dependency Node HTTP bridge via `installer/wizard-server.js` so the HTML wizard can install everything from the browser!)*
-   - **Step 03 — Desktop Icon & Start Menu Shortcut**: Check **"Add UltraSuperConvertor Icon to Windows Desktop"** and **"Add to Windows Start Menu"** to generate native Windows `.lnk` shortcuts stamped with the custom multi-resolution `UltraSuperConvertor.ico` emblem.
-   - **Step 04 — Ready to Launch**: Click **`🚀 OPEN ULTRASUPERCONVERTOR STUDIO`** to jump straight into the workspace.
+   - **Step 03 — Desktop Icon & Start Menu Shortcut**: Check **"Add UltraSuperConverter Icon to Windows Desktop"** and **"Add to Windows Start Menu"** to generate native Windows `.lnk` shortcuts stamped with the custom multi-resolution `UltraSuperConverter.ico` emblem.
+   - **Step 04 — Ready to Launch**: Click **`🚀 OPEN ULTRASUPERCONVERTER STUDIO`** to jump straight into the workspace.
 
 > **Node.js LTS Included in Setup**: If Node.js is not installed on your PC yet, Step 1 of `setup-wizard.html` provides a 1-click download for the official signed [Node.js LTS Windows `.msi` Installer](https://nodejs.org/), and running `setup-wizard.cmd` will automatically install Node.js LTS via `winget` or the official `.msi` package. All media engines (`sharp`, `ffmpeg-static`, `ffprobe-static`) are bundled automatically via NPM—no manual `PATH` or codec setup required.
 
@@ -151,16 +153,16 @@ UltraSuperConvertor uses an **HTML Setup & Desktop Shortcut Wizard** (`setup-wiz
 
 ## 2. Starting & Stopping the Application
 
-### Starting UltraSuperConvertor
+### Starting UltraSuperConverter
 You can launch the application in any of three ways:
-1. **Desktop Icon**: Double-click the **UltraSuperConvertor** icon on your Windows Desktop or Start Menu.
+1. **Desktop Icon**: Double-click the **UltraSuperConverter** icon on your Windows Desktop or Start Menu.
 2. **Batch Launcher**: Double-click **`start.cmd`** in the root folder.
    - Checks if `node_modules` is present (and auto-installs if missing).
    - Starts `node server.js` minimized in the background and records its PID in `.server.pid`.
    - Automatically opens `http://localhost:3847` in your default browser.
 3. **CLI**: Run `npm start` (or `node server.js`) from a terminal.
 
-### Stopping UltraSuperConvertor
+### Stopping UltraSuperConverter
 When you are done converting files, you can shut down the background server immediately in either of two ways:
 1. **In-App GUI Button**: Click the red **`STOP INSTANCE`** power button in the top-right header of the web interface and confirm shutdown.
 2. **Stop Script**: Double-click **`stop.cmd`** in the project directory, which gracefully calls `POST /api/shutdown`, terminates any process listening on port `3847`, and cleans up `.server.pid`.
@@ -222,13 +224,13 @@ Each item card in the Batch Queue includes interactive studio buttons:
 ## 6. Project Structure & Architecture
 
 ```text
-UltraSuperConvertor/
+UltraSuperConverter/
 ├── server.js                  # Express + Sharp + FFmpeg/FFprobe processing engine & REST/SSE API
 ├── setup-wizard.html          # 4-Step HTML Setup, Dependency & Desktop Icon Wizard UI
 ├── setup-wizard.cmd           # Launches the HTML Setup Wizard in the default browser
 ├── start.cmd                  # Starts the background server and opens http://localhost:3847
 ├── stop.cmd                   # Gracefully stops the running server instance and frees port 3847
-├── UltraSuperConvertor.ico    # Multi-resolution (16, 32, 48, 64, 256px) Windows Desktop Icon
+├── UltraSuperConverter.ico    # Multi-resolution (16, 32, 48, 64, 256px) Windows Desktop Icon
 ├── package.json               # Dependencies (express, sharp, ffmpeg-static, ffprobe-static, archiver, multer)
 ├── installer/
 │   └── wizard-server.js       # Zero-dependency Node HTTP bootstrapper for fresh clones

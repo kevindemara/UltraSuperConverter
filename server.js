@@ -1075,7 +1075,7 @@ app.get('/api/state', (req, res) => {
   const items = Array.from(mediaStore.values()).sort((a, b) => b.createdAt - a.createdAt);
   res.json({
     engine: {
-      name: `UltraSuperConvertor Core v${getLocalVersion()}`,
+      name: `UltraSuperConverter Core v${getLocalVersion()}`,
       sharpVersion: sharp.versions.sharp,
       libvipsVersion: sharp.versions.vips,
       ffmpegReady: fs.existsSync(ffmpegPath),
@@ -1299,7 +1299,7 @@ app.post('/api/generate-demo', async (req, res) => {
         <circle cx="1200" cy="800" r="340" fill="none" stroke="#00d2ff" stroke-width="14" stroke-dasharray="40 20"/>
         <circle cx="1200" cy="800" r="210" fill="url(#accent)"/>
         <polygon points="1200,520 1440,940 960,940" fill="none" stroke="#ffffff" stroke-width="16"/>
-        <text x="220" y="270" font-family="Segoe UI, Arial, sans-serif" font-weight="900" font-size="72" fill="#090d16" letter-spacing="6">ULTRASUPERCONVERTOR // LAB TARGET 01</text>
+        <text x="220" y="270" font-family="Segoe UI, Arial, sans-serif" font-weight="900" font-size="72" fill="#090d16" letter-spacing="6">ULTRASUPERCONVERTER // LAB TARGET 01</text>
         <text x="220" y="345" font-family="Consolas, monospace" font-weight="700" font-size="38" fill="#0055ff">2400x1600 UNCOMPRESSED RASTER REFERENCE PLATE // RGB 24-BIT</text>
         <text x="220" y="1380" font-family="Consolas, monospace" font-weight="700" font-size="36" fill="#0f172a">CHROMA: OKLCH-READY  |  SHARPNESS: ISO-12233  |  READY FOR WEB OPTIMIZATION</text>
       </svg>
@@ -1499,7 +1499,7 @@ app.get('/api/download-zip', (req, res) => {
   );
 
   const entries = [];
-  let zipName = `UltraSuperConvertor_Batch_${Date.now()}.zip`;
+  let zipName = `UltraSuperConverter_Batch_${Date.now()}.zip`;
   if (completed.length > 0) {
     const sourceZips = new Set(completed.map((i) => i.sourceZip || ''));
     const singleZipOnly = sourceZips.size === 1 && !sourceZips.has('');
@@ -1529,7 +1529,7 @@ app.get('/api/download-zip', (req, res) => {
 
     zipName = singleZipOnly
       ? `${path.parse([...sourceZips][0]).name.replace(/[^a-zA-Z0-9._-]/g, '_')}_converted.zip`
-      : `UltraSuperConvertor_Batch_${Date.now()}.zip`;
+      : `UltraSuperConverter_Batch_${Date.now()}.zip`;
   } else if (fs.existsSync(OUTPUTS_DIR)) {
     fs.readdirSync(OUTPUTS_DIR)
       .filter((name) => name !== '.gitkeep')
@@ -1644,7 +1644,7 @@ app.get('/setup', (req, res) => {
 
 app.get('/api/wizard/preflight', (req, res) => {
   const desktopDir = path.join(os.homedir(), 'Desktop');
-  const shortcutPath = path.join(desktopDir, 'UltraSuperConvertor.lnk');
+  const shortcutPath = path.join(desktopDir, 'UltraSuperConverter.lnk');
   res.json({
     pid: process.pid,
     nodeVersion: process.version,
@@ -1713,7 +1713,7 @@ app.post('/api/wizard/shortcut', async (req, res) => {
   try {
     const { desktop = true, startMenu = true, contextMenu = true, sendTo = true } = req.body || {};
     const startCmdPath = path.join(ROOT_DIR, 'start.cmd');
-    const icoPath = path.join(ROOT_DIR, 'UltraSuperConvertor.ico');
+    const icoPath = path.join(ROOT_DIR, 'UltraSuperConverter.ico');
     const created = [];
 
     const psCommands = ['$WshShell = New-Object -ComObject WScript.Shell'];
@@ -1721,10 +1721,10 @@ app.post('/api/wizard/shortcut', async (req, res) => {
     if (desktop) {
       psCommands.push(`
         $DesktopDir = [Environment]::GetFolderPath('Desktop')
-        $Shortcut = $WshShell.CreateShortcut((Join-Path $DesktopDir 'UltraSuperConvertor.lnk'))
+        $Shortcut = $WshShell.CreateShortcut((Join-Path $DesktopDir 'UltraSuperConverter.lnk'))
         $Shortcut.TargetPath = '${startCmdPath.replace(/'/g, "''")}'
         $Shortcut.WorkingDirectory = '${ROOT_DIR.replace(/'/g, "''")}'
-        $Shortcut.Description = 'Launch UltraSuperConvertor Quantum Media Engine'
+        $Shortcut.Description = 'Launch UltraSuperConverter Quantum Media Engine'
         $Shortcut.IconLocation = '${icoPath.replace(/'/g, "''")},0'
         $Shortcut.WindowStyle = 7
         $Shortcut.Save()
@@ -1735,10 +1735,10 @@ app.post('/api/wizard/shortcut', async (req, res) => {
     if (startMenu) {
       psCommands.push(`
         $ProgramsDir = [Environment]::GetFolderPath('Programs')
-        $ShortcutSM = $WshShell.CreateShortcut((Join-Path $ProgramsDir 'UltraSuperConvertor.lnk'))
+        $ShortcutSM = $WshShell.CreateShortcut((Join-Path $ProgramsDir 'UltraSuperConverter.lnk'))
         $ShortcutSM.TargetPath = '${startCmdPath.replace(/'/g, "''")}'
         $ShortcutSM.WorkingDirectory = '${ROOT_DIR.replace(/'/g, "''")}'
-        $ShortcutSM.Description = 'Launch UltraSuperConvertor Quantum Media Engine'
+        $ShortcutSM.Description = 'Launch UltraSuperConverter Quantum Media Engine'
         $ShortcutSM.IconLocation = '${icoPath.replace(/'/g, "''")},0'
         $ShortcutSM.WindowStyle = 7
         $ShortcutSM.Save()
@@ -1776,7 +1776,7 @@ app.post('/api/wizard/shortcut', async (req, res) => {
 
 // ==================== GITHUB AUTO-UPDATER ROUTES ====================
 
-const GITHUB_REPO = 'kevindemara/UltraSuperConvertor';
+const GITHUB_REPO = 'kevindemara/UltraSuperConverter';
 
 function getLocalGitSha() {
   return new Promise((resolve) => {
@@ -1803,7 +1803,7 @@ app.get('/api/update/check', async (req, res) => {
     const localSha = await getLocalGitSha();
 
     const headers = {
-      'User-Agent': 'UltraSuperConvertor-Updater/2.4',
+      'User-Agent': 'UltraSuperConverter-Updater/2.4',
       'Accept': 'application/vnd.github.v3+json',
       'Cache-Control': 'no-cache'
     };
@@ -1934,21 +1934,21 @@ app.post('/api/update/apply', async (req, res) => {
 // Stop instance / Shutdown server from GUI or stop.cmd
 app.post('/api/shutdown', (req, res) => {
   workspaceRouter.store.close();
-  broadcastEvent('system-shutdown', { message: 'UltraSuperConvertor Engine shutting down...' });
+  broadcastEvent('system-shutdown', { message: 'UltraSuperConverter Engine shutting down...' });
   res.json({ status: 'shutting_down', pid: process.pid });
 
   setTimeout(() => {
     try {
       if (fs.existsSync(PID_FILE)) fs.unlinkSync(PID_FILE);
     } catch (_) {}
-    console.log('\n[UltraSuperConvertor] Instance stopped via shutdown command.');
+    console.log('\n[UltraSuperConverter] Instance stopped via shutdown command.');
     process.exit(0);
   }, 400);
 });
 
 const server = app.listen(PORT, '127.0.0.1', () => {
   console.log('================================================================');
-  console.log(`  ULTRASUPERCONVERTOR // QUANTUM MEDIA ENGINE ONLINE`);
+  console.log(`  ULTRASUPERCONVERTER // QUANTUM MEDIA ENGINE ONLINE`);
   console.log(`  GUI URL  : http://localhost:${server.address().port}`);
   console.log(`  PID      : ${process.pid}`);
   console.log('================================================================');

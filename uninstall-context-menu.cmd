@@ -1,10 +1,10 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title UltraSuperConvertor // Remove Context Menu
+title UltraSuperConverter // Remove Context Menu
 
 echo ================================================================
-echo   ULTRASUPERCONVERTOR // REMOVE CONTEXT MENU INTEGRATION
+echo   ULTRASUPERCONVERTER // REMOVE CONTEXT MENU INTEGRATION
 echo ================================================================
 echo.
 echo Removing context menu and SendTo shortcut...
