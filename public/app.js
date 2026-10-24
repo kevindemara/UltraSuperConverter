@@ -532,6 +532,11 @@
     if (engineExpandLabel) {
       engineExpandLabel.textContent = nextState ? 'Hide ▴' : 'Customize ▾';
     }
+    if (nextState) {
+      setTimeout(() => {
+        engineAccordionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
   }
 
   btnToggleEngineCard?.addEventListener('click', (e) => {
