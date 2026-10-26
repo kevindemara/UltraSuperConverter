@@ -1,7 +1,6 @@
 <div align="center">
   <img src="public/assets/logo-opt.png" alt="UltraSuperConverter Logo" width="96" height="96" />
-  <br />
-  <img src="public/assets/wordmark.png" alt="ULTRA SUPER CONVERTER" height="44" />
+  <h1>UltraSuperConverter</h1>
   <p><strong>100 Local Tools for Text, PDFs, Images, Video, Audio &amp; Data</strong></p>
   <p>
     <code>100% Local &amp; Private</code> &bull; <code>Portable Windows</code> &bull; <code>Batch Workflows</code> &bull; <code>Favorites &amp; Recent Tools</code>
