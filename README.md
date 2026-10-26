@@ -2,15 +2,54 @@
   <img src="public/assets/logo-opt.png" alt="UltraSuperConverter Logo" width="96" height="96" />
   <br />
   <img src="public/assets/wordmark.png" alt="ULTRA SUPER CONVERTER" height="44" />
-  <p><strong>Fast, Modern Local Media Converter &amp; Compressor</strong></p>
+  <p><strong>100 Local Tools for Text, PDFs, Images, Video, Audio &amp; Data</strong></p>
   <p>
-    <code>Sharp (libvips)</code> &bull; <code>HEIC / HEIF Support</code> &bull; <code>FFmpeg Static</code> &bull; <code>100% Local &amp; Private</code> &bull; <code>100-Tool Toolbox</code>
+    <code>100% Local &amp; Private</code> &bull; <code>Portable Windows</code> &bull; <code>Batch Workflows</code> &bull; <code>Favorites &amp; Recent Tools</code>
   </p>
+  <p>
+    <a href="https://github.com/kevindemara/UltraSuperConverter/releases/download/v5.2.0/UltraSuperConverter-5.2.0-win-x64.zip">
+      <img src="public/assets/download-windows.svg" alt="Download UltraSuperConverter for Windows — portable, no installation" width="360" height="64" />
+    </a>
+  </p>
+  <p><strong>Windows 10/11 · x64 · v5.2.0 · 165 MB</strong><br />Extract the ZIP, then double-click <code>UltraSuperConverter.exe</code>. No Node.js installation needed.</p>
+  <p><a href="https://github.com/kevindemara/UltraSuperConverter/releases/tag/v5.2.0">Release notes &amp; SHA-256 checksum</a></p>
 </div>
 
 ---
 
 [GitHub repository](https://github.com/kevindemara/UltraSuperConverter)
+
+## What you can do
+
+- **Find tools quickly:** browse ten categories, search all 100 tools, save favorites, and return to recently used tools.
+- **Work with text:** change case, count words and characters, clean pasted text, find and replace, and compare changes with diff checkers.
+- **Handle PDFs and documents:** compress, merge, split, watermark, number and resize PDFs; extract text; convert Word documents and spreadsheets.
+- **Convert and edit media:** convert HEIC and other image formats, resize and crop photos, compress and trim video, replace soundtracks, and process audio.
+- **Use data and developer utilities:** convert JSON/CSV/YAML/XML, format and minify code, test regular expressions, generate QR codes, and convert units and timestamps.
+- **Hash and encrypt locally:** calculate MD5/SHA checksums, generate HMACs and secure passwords, and encrypt or decrypt with AES-256-GCM.
+- **Automate repeat work:** save multistep recipes, process file batches, run jobs in the background, retry jobs, and download ZIP bundles with reports.
+
+All conversion processing stays on your computer. The portable Windows build bundles the runtime and conversion engines, so you can start using it without an installer.
+
+## Screenshots
+
+### Media studio
+
+Convert images, video and audio together, choose presets, and review downloads and space savings. This example uses the app's built-in sample files; savings vary with the input and settings.
+
+![Media studio showing a completed batch of sample audio, video and image conversions](docs/images/media-studio.png)
+
+### Toolbox
+
+Search all 100 tools, browse categories, and keep favorites and recently used tools close at hand.
+
+![Toolbox showing tool icons, category navigation, search, favorites and recently used tools](docs/images/toolbox.png)
+
+### Background Workspace
+
+Keep a file library, save conversion recipes, and manage background jobs with downloadable results and reports. This example shows a completed two-step JSON-to-CSV workflow using synthetic product data.
+
+![Workspace showing a completed two-step product catalog job and its CSV output](docs/images/workspace.png)
 
 ## New in v5.2 — Windows portable app
 
