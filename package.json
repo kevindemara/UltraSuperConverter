@@ -1,6 +1,6 @@
 {
   "name": "ultra-super-converter",
-  "version": "5.1.1",
+  "version": "5.2.0",
   "description": "100 local text, PDF, code, crypto, document, image and media tools with persistent conversion workflows",
   "engines": {
     "node": ">=22.13.0"
@@ -8,6 +8,8 @@
   "main": "server.js",
   "scripts": {
     "test": "node --test test/*.test.js",
+    "build:portable": "node scripts/build-portable.js",
+    "test:portable": "node scripts/test-portable.js",
     "start": "node server.js",
     "stop": "stop.cmd"
   },

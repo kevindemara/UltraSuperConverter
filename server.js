@@ -22,6 +22,7 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 3847;
+const PORTABLE = process.env.USC_PORTABLE === '1';
 
 // Directories
 const ROOT_DIR = __dirname;
@@ -45,6 +46,12 @@ try {
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+app.use((req, res, next) => {
+  if (PORTABLE && (req.path === '/setup' || req.path === '/setup-wizard.html' || req.path.startsWith('/api/wizard/'))) {
+    return res.status(409).json({ error: 'This portable build is ready to use. No installation or shortcuts are required.' });
+  }
+  next();
+});
 app.use('/api/toolbox', require('./lib/toolbox-routes')(DATA_DIR));
 const workspaceRouter = require('./lib/workspace-routes')(DATA_DIR);
 process.once('exit', () => workspaceRouter.store.releaseLock());
@@ -1076,6 +1083,8 @@ app.get('/api/state', (req, res) => {
   res.json({
     engine: {
       name: `UltraSuperConverter Core v${getLocalVersion()}`,
+      portable: PORTABLE,
+      portableId: PORTABLE ? process.env.USC_PORTABLE_ID : undefined,
       sharpVersion: sharp.versions.sharp,
       libvipsVersion: sharp.versions.vips,
       ffmpegReady: fs.existsSync(ffmpegPath),
@@ -1798,6 +1807,7 @@ function getLocalVersion() {
 }
 
 app.get('/api/update/check', async (req, res) => {
+  if (PORTABLE) return res.json({ ok: true, portable: true, updateAvailable: false, localVersion: getLocalVersion(), remoteVersion: getLocalVersion(), repoUrl: `https://github.com/${GITHUB_REPO}` });
   try {
     const localVersion = getLocalVersion();
     const localSha = await getLocalGitSha();
@@ -1850,6 +1860,7 @@ app.get('/api/update/check', async (req, res) => {
 });
 
 app.post('/api/update/apply', async (req, res) => {
+  if (PORTABLE) return res.status(409).json({ ok: false, error: 'Download and extract a newer portable ZIP, then move your Data folder into it. The source updater is unavailable in portable builds.' });
   try {
     const logs = [];
     logs.push(`[1/3] Connecting to https://github.com/${GITHUB_REPO} ...`);

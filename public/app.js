@@ -1214,6 +1214,14 @@
       if (updateLocalVerText) updateLocalVerText.textContent = localLabel;
       if (updateRemoteVerText) updateRemoteVerText.textContent = remoteLabel;
 
+      if (data.portable) {
+        if (btnCheckUpdates?.querySelector('span')) btnCheckUpdates.querySelector('span').textContent = 'Portable build';
+        if (updateStatusBadge) { updateStatusBadge.textContent = 'Portable build'; updateStatusBadge.style.color = '#2563eb'; }
+        if (updateStatusBanner) updateStatusBanner.textContent = 'To update, quit the app, extract a newer portable ZIP into a new folder, and move your Data folder into it.';
+        if (btnApplyUpdateNow) btnApplyUpdateNow.hidden = true;
+        return;
+      }
+
       const btnSpan = btnCheckUpdates?.querySelector('span');
       if (data.updateAvailable) {
         if (btnSpan) btnSpan.textContent = 'Update Available';
@@ -2391,6 +2399,10 @@
       const data = await res.json();
       if (data.engine?.pid) {
         serverPid = data.engine.pid;
+      }
+      if (data.engine?.portable) {
+        const setup = document.getElementById('btnSetupWizard');
+        if (setup) setup.hidden = true;
       }
       if (Array.isArray(data.items)) {
         data.items.reverse().forEach((item) => upsertQueueItem(item));

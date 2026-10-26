@@ -12,6 +12,20 @@
 
 [GitHub repository](https://github.com/kevindemara/UltraSuperConverter)
 
+## New in v5.2 — Windows portable app
+
+The Toolbox button is highlighted in blue across all three workspaces.
+
+The **Windows x64 portable ZIP** includes `UltraSuperConverter.exe`, Node.js, FFmpeg/FFprobe and the native image/PDF engines. Extract the entire ZIP to a writable folder and double-click the EXE. It opens the app in your default browser without installing Node.js, npm, services or registry entries. Keep the `App` and `Runtime` folders beside the EXE. Windows 10/11 x64 with the built-in .NET Framework 4.x is required. The launcher is unsigned, so Windows may display a publisher or reputation prompt.
+
+Files, conversion results, recipes, job history and logs are stored in a **Data** folder beside the EXE. Browser favorites and recent tools remain in the browser profile. Use **Quit** in the app to stop its engine. Double-clicking the EXE again reopens the existing portable instance; an occupied local port is left alone and another port is selected. The portable engine binds to loopback only. The setup wizard and source updater are disabled in portable builds. To upgrade, quit, extract a newer ZIP into a new folder, and move `Data` into it.
+
+### Build and verify a portable ZIP
+
+On Windows x64, install dependencies and use a supported Node.js runtime. Save that runtime's official `LICENSE` from `https://raw.githubusercontent.com/nodejs/node/vVERSION/LICENSE` to `.portable-cache/node-vVERSION-LICENSE.txt`. Then run `npm run build:portable`. The Windows .NET Framework C# compiler builds the launcher; no extra packaging dependency is required. The output is `dist/UltraSuperConverter-VERSION-win-x64.zip`, its SHA-256 checksum file, and an extracted folder for local use.
+
+The build copies only an explicit app-file allowlist and installed dependencies, includes component licenses and notices, and excludes local files, uploads, outputs, Workspace data and Git metadata. It tests the packaged EXE with Node/npm/Git removed from `PATH`, covering occupied-port handling, repeated launch, HTTP routes, update/setup guards, text tools, regex workers, code formatting, native QR/image/PDF rendering, FFmpeg/FFprobe, a forked background job and clean shutdown before producing the ZIP. `npm run test:portable` repeats those checks on a fresh extracted build without an existing Data folder.
+
 ## New in v5.1 — organized tool library
 
 The [Toolbox](http://localhost:3847/tools.html#all) organizes all **100 tools into ten categories**, with small SVG icons, searchable cards and a compact list view. Search works across the whole library, including common terms such as “uppercase” and “compress PDF.” Use **Ctrl/Cmd+K** or **/** to jump to search; existing tool links still open directly.
